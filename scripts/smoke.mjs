@@ -11,7 +11,7 @@ try {
   });
   const failures = [];
   page.on('pageerror', error => failures.push(error.message));
-  await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
+  await page.goto(`http://127.0.0.1:4173${process.env.GITHUB_PAGES === '1' ? '/englishlearning/' : '/'}`, { waitUntil: 'networkidle' });
   await page.getByText('오늘 복습 3개').waitFor();
   await page.getByRole('button', { name: /subtle/ }).click();
   await page.getByRole('button', { name: 'good' }).click();
