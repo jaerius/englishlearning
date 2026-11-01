@@ -8,4 +8,4 @@ This is not an AI conversation service. Review scheduling now calls `ts-fsrs` FS
 
 Run `npm install`, `npm run web:build`, then `npm run web`. For iPhone testing, serve `dist/` from an HTTPS host; Safari microphone access requires a secure origin.
 
-GitHub Pages deployment is prepared in `.github/workflows/pages.yml`. Publishing requires a commit on `main` and Pages configured to use GitHub Actions. The project has not been published or tested on an iPhone.
+Vercel deployment is configured in `vercel.json`: install with `npm ci --ignore-scripts`, build with `npm run web:build`, publish `dist/`. The project has not been published or tested on an iPhone.
