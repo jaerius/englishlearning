@@ -1,0 +1,20 @@
+<!doctype html><html><body><output id="result">running</output><script type="module">
+import {putRecording,listRecordings,deleteRecording,pruneRecordings,replaceCards,listCards,saveReview,listReviewLogs,exportLearningData,importLearningData} from './src/storage.js';
+const result=document.getElementById('result');
+try {
+  const item=await putRecording(new Blob(['audio-test'],{type:'audio/webm'}));
+  if(!(await listRecordings()).some(x=>x.id===item.id))throw Error('recording not committed');
+  await deleteRecording(item.id);
+  if((await listRecordings()).some(x=>x.id===item.id))throw Error('delete not committed');
+  const card={id:'test',front:'test',back:'시험',fsrs:{dueAt:new Date().toISOString()}};
+  await replaceCards([card]);
+  if((await listCards())[0]?.id!=='test')throw Error('card not committed');
+  await saveReview(card,{grade:3});
+  if((await listReviewLogs()).length!==1)throw Error('review not committed');
+  const backup=await exportLearningData();
+  await importLearningData(backup);
+  if((await listCards()).length!==1)throw Error('restore failed');
+  await pruneRecordings();
+  result.textContent='PASS';
+} catch(error){result.textContent='FAIL: '+error.message}
+</script></body></html>

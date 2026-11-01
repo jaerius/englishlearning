@@ -1,0 +1,36 @@
+:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#18332e;background:#f6f5ef;font-synthesis:none;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+*{box-sizing:border-box}
+body{margin:0;min-width:320px}
+button,textarea,input{font:inherit}
+button{-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:pointer}
+button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid #daaa47;outline-offset:3px}
+main{width:min(100%,640px);margin:auto;padding:calc(env(safe-area-inset-top) + 28px) 20px calc(env(safe-area-inset-bottom) + 44px)}
+header{padding:8px 4px 7px}
+header small,.coach>b,.notes>b,.review>b{font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase}
+header small,.notes>b,.review>b{color:#286d5d}
+header h1{margin:13px 0 9px;font-size:clamp(38px,11vw,56px);line-height:1.02;letter-spacing:-.055em;font-weight:800}
+header p{margin:0;color:#5e6f67;font-size:15px;line-height:1.5}
+section{margin-top:18px}
+.coach{padding:24px 20px 20px;border-radius:24px;background:#173f3a;color:#f9faf5}
+.coach>b{color:#aedacb}
+.coach>p{min-height:55px;margin:15px 0 18px;font-size:18px;line-height:1.45;font-weight:600;word-break:keep-all}
+.coach textarea{width:100%;min-height:92px;padding:14px 15px;border:1px solid transparent;border-radius:12px;background:#f8f9f4;color:#18332e;resize:vertical;line-height:1.45;font-size:16px}
+.coach textarea::placeholder{color:#6c7972}
+.coach>div{display:flex;gap:10px;margin-top:12px}
+button{min-height:48px;padding:12px 14px;border:0;border-radius:12px;background:#e8bb64;color:#18332e;font-size:15px;font-weight:750}
+button:active{transform:scale(.99)}
+.ghost{background:#e1efe8;color:#173f3a}
+.coach>div button{flex:1}
+.notes,.review{padding:21px 18px 20px;border:1px solid #e1e6de;border-radius:20px;background:#fff}
+.notes>p,.review>p{margin:10px 0 0;color:#60716a;font-size:14px;line-height:1.5;word-break:keep-all}
+.line{width:100%;margin-top:15px;border:1.5px solid #237765;background:#fff;color:#176450}
+.note{display:flex;align-items:center;gap:8px;margin-top:10px;padding:8px 0;border-top:1px solid #edf0eb}
+.note span{font-size:14px;color:#53665c}
+.note button{min-width:54px;min-height:44px;padding:9px 10px;border-radius:10px;background:#e8f3ed;color:#176450;font-size:14px}
+.note button:last-child{background:#faece8;color:#a43f34}
+.review h2{margin:8px 0 17px;font-size:24px;line-height:1.2;letter-spacing:-.03em}
+.grades{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:12px}
+.grades button{min-width:0;padding:10px 3px;background:#e9f0eb;color:#285247;text-transform:capitalize;font-size:13px}
+footer{margin:22px 4px 0;color:#65766e;font-size:13px;line-height:1.6;word-break:keep-all}
+@media(max-width:370px){main{padding-left:14px;padding-right:14px}.coach,.notes,.review{padding-left:15px;padding-right:15px}}
+@media(prefers-reduced-motion:reduce){button:active{transform:none}}
