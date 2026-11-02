@@ -19,6 +19,14 @@ export class SpeakingService {
     return this.allScenarios(this.store.snapshot() as SpeakingDatabase);
   }
 
+  recent() {
+    const db = this.store.snapshot() as SpeakingDatabase;
+    const scenarios = this.allScenarios(db);
+    return (db.speakingSessions ?? []).filter(session => session.finishedAt && session.summary)
+      .sort((a, b) => (b.finishedAt ?? '').localeCompare(a.finishedAt ?? ''))
+      .slice(0, 3).map(session => ({ id: session.id, title: scenarios.find(item => item.id === session.scenarioId)?.title ?? '영어 대화', finishedAt: session.finishedAt, turns: session.messages.filter(message => message.role === 'user').length, summary: session.summary }));
+  }
+
   targetWords() {
     const db = this.store.snapshot();
     return db.userWords.filter(progress => progress.lastStudiedAt && kstDate(new Date(progress.lastStudiedAt)) === kstDate())

@@ -17,7 +17,17 @@ try {
   await ready(`${api}/api/health`); await ready(web);
   browser = await chromium.launch({ executablePath: '/usr/bin/chromium', args: ['--no-sandbox'] });
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'ko-KR' });
-  await context.addInitScript(() => { Object.defineProperty(window, 'speechSynthesis', { configurable: true, value: { cancel() {}, speak() {}, getVoices() { return []; }, addEventListener() {}, removeEventListener() {} } }); });
+  await context.addInitScript(() => {
+    window.__recordings = 0;
+    Object.defineProperty(window, 'speechSynthesis', { configurable: true, value: { cancel() {}, speak(utterance) { setTimeout(() => utterance.onend?.(), 20); }, getVoices() { return []; }, addEventListener() {}, removeEventListener() {} } });
+    Object.defineProperty(navigator, 'mediaDevices', { configurable: true, value: { getUserMedia: async () => ({ getTracks: () => [{ stop() {} }] }) } });
+    window.MediaRecorder = class {
+      static isTypeSupported() { return true; }
+      constructor() { this.state = 'inactive'; this.mimeType = 'audio/webm'; }
+      start() { this.state = 'recording'; window.__recordings += 1; }
+      stop() { this.state = 'inactive'; setTimeout(() => { this.ondataavailable?.({ data: new Blob(['voice'], { type: 'audio/webm' }) }); this.onstop?.(); }, 0); }
+    };
+  });
   const page = await context.newPage();
   const errors = []; page.on('pageerror', error => errors.push(error.message));
   await page.goto(`${web}/level/test`);
@@ -57,8 +67,20 @@ try {
   await page.getByRole('button', { name: '종료' }).click();
   await page.waitForURL('**/speaking/summary');
   await page.getByText('3턴').waitFor();
+  await page.goto(`${web}/speaking`);
+  await page.getByText('최근 대화').waitFor();
+  await page.getByRole('button', { name: /카페에서 주문하기/ }).last().click();
+  await page.waitForURL('**/speaking/summary');
+  await page.goto(`${web}/settings`);
+  await page.getByText('이번 달 예상 AI 비용').waitFor();
+  await page.goto(`${web}/conversation?scenario=cafe`);
+  await page.getByRole('button', { name: /연속 대화 시작/ }).click();
+  await page.waitForFunction(() => window.__recordings >= 1);
+  await page.getByRole('button', { name: /다시 눌러 전송/ }).click();
+  await page.waitForFunction(() => window.__recordings >= 2, null, { timeout: 10_000 });
+  await page.getByRole('button', { name: /연속 대화 끄기/ }).click();
   if (errors.length) throw Error(errors.join('\n'));
-  console.log('Full browser/API smoke passed: 20-question level test, 10-word study, quiz result, 3-turn speaking summary');
+  console.log('Full browser/API smoke passed: 20-question level test, 10-word study, quiz result, 3-turn speaking summary, recent conversation, cost display, and automatic next-turn listening');
 } finally {
   await browser?.close(); preview.kill('SIGTERM'); server.kill('SIGTERM'); await rm(dataDir, { recursive: true, force: true });
 }

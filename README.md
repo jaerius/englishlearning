@@ -1,6 +1,6 @@
 # Lingo Loop
 
-개인용 영어 학습 PWA. 사용자가 제공한 상세 기획서를 기준으로 15개 화면, 단계별 단어 복습, AI 대화 경로를 구현하고 있다. iPhone Safari에서 홈 화면에 추가할 수 있으며 Apple Developer 계정은 필요하지 않다.
+개인용 영어 학습 PWA. 사용자가 제공한 상세 기획서를 기준으로 15개 화면, 단계별 단어 복습, 연속 음성 대화 경로를 구현하고 있다. iPhone Safari에서 홈 화면에 추가할 수 있으며 Apple Developer 계정은 필요하지 않다.
 
 - `apps/web`: React, Vite, TypeScript, 모바일 PWA
 - `apps/server`: NestJS 개인 API, 학습·말하기 상태

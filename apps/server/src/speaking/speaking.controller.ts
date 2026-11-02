@@ -7,6 +7,7 @@ import { SpeakingService } from './speaking.service.js';
 export class SpeakingController {
   constructor(private readonly service: SpeakingService) {}
   @Get('scenarios') scenarios() { return this.service.scenarios(); }
+  @Get('sessions/recent') recent() { return this.service.recent(); }
   @Get('target-words') targetWords() { return this.service.targetWords(); }
   @Post('scenarios/custom') createCustom(@Body() body: CreateCustomScenarioDto) { return this.service.createCustom(body); }
   @Post('sessions') start(@Body() body: StartSpeakingSessionDto) { return this.service.start(body); }
