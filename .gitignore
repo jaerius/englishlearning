@@ -3,4 +3,10 @@ node_modules/
 dist/
 *.tsbuildinfo
 apps/web/artifacts/
+.env
+deploy/data/
+deploy/backups/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
 .DS_Store

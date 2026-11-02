@@ -19,6 +19,6 @@ npm run web:build
 npm test
 ```
 
-서버는 `DATA_FILE=/path/to/lingo-loop.json npm --prefix apps/server start`로, 웹은 `npm run web`으로 실행한다. 웹 빌드에 `VITE_API_BASE_URL`을 Mac mini의 Tailscale HTTPS 주소로 지정해야 서버 학습과 AI 대화가 연결된다. 키는 서버의 `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`에만 둔다. `SPEAKING_PROVIDER=live`에서 실제 API를 호출하고 `mock`은 개발 검증용이다.
+서버는 `DATA_FILE=/path/to/lingo-loop.sqlite npm --prefix apps/server start`로, 웹은 `npm run web`으로 실행한다. 웹 빌드에 `VITE_API_BASE_URL`을 Mac mini의 Tailscale HTTPS 주소로 지정해야 서버 학습과 AI 대화가 연결된다. 키는 서버의 `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`에만 둔다. `SPEAKING_PROVIDER=live`에서 실제 API를 호출하고 `mock`은 개발 검증용이다.
 
-Vercel은 `vercel.json`에 따라 `apps/web/dist`를 배포한다. 서버 데이터는 현재 SQLite가 아닌 단일 JSON 파일이며 원자적 교체로 저장한다. 60개 단어는 개발 시드이고 기획서의 3,000개 콘텐츠를 대체하지 않는다. Mac mini, Tailscale, AI 키, 실제 iPhone 접근이 없어 운영 경로는 아직 검증하지 못했다. 이 상태를 프로덕션 완료로 간주하지 않는다.
+Vercel은 `vercel.json`에 따라 `apps/web/dist`를 배포한다. 서버 데이터는 현재 SQLite의 단일 앱 상태 행에 트랜잭션으로 저장한다. 기획서의 개별 정규화 테이블은 후속 작업이다. 60개 단어는 개발 시드이고 기획서의 3,000개 콘텐츠를 대체하지 않는다. Mac mini, Tailscale, AI 키, 실제 iPhone 접근이 없어 운영 경로는 아직 검증하지 못했다. 이 상태를 프로덕션 완료로 간주하지 않는다.

@@ -11,7 +11,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3001
-      DATA_FILE: /data/lingo-loop.json
+      DATA_FILE: /data/lingo-loop.sqlite
     ports:
       - "127.0.0.1:3001:3001"
     volumes:

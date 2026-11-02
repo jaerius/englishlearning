@@ -5,7 +5,7 @@
 ```text
 iPhone Safari/PWA ── HTTPS ── Vercel 정적 앱
         │
-        └── Tailscale HTTPS ── Mac mini NestJS API ── JSON 데이터 파일
+        └── Tailscale HTTPS ── Mac mini NestJS API ── SQLite 데이터 파일
                                       ├── OpenAI 음성 인식
                                       └── Anthropic 대화·요약
 ```
@@ -14,7 +14,7 @@ iPhone Safari/PWA ── HTTPS ── Vercel 정적 앱
 
 - 학습 단계, 세션, 오답, 설정, 대화 메시지와 일일 한도는 Mac mini의 `DATA_FILE`에 저장된다. 앱의 로컬 저장소에는 설정 캐시와 전송 대기 답안만 둔다.
 - 녹음 파일은 브라우저 메모리에서 업로드하고 서버가 음성 인식에 전달한다. 앱 DB나 파일시스템에 녹음 파일을 보관하지 않는다. 음성 전사는 OpenAI, 대화 텍스트는 Anthropic에 전송된다.
-- 현재 저장소는 기획서의 SQLite 대신 원자적 파일 교체를 사용하는 JSON이다. 단일 프로세스만 지원하며, 파일 손상 시 시작을 중단하고 백업 복구를 요구한다. SQLite 마이그레이션과 자동 복구는 출시 전 과제다.
+- 현재 SQLite의 `app_state` 한 행에 전체 앱 상태를 보관한다. 트랜잭션과 WAL을 사용하고 백업 API로 일관된 사본을 만든다. 기획서의 개별 정규화 테이블과 자동 복구는 출시 전 과제다.
 - Tailnet에 로그인한 기기만 API에 접근한다. 서버 키는 Mac mini 환경변수에만 보관한다.
 
 ## 학습 경로
@@ -32,7 +32,7 @@ iPhone Safari/PWA ── HTTPS ── Vercel 정적 앱
 ## 현재 출시 차단점
 
 - Mac mini/Tailscale 주소와 OpenAI·Anthropic 키가 제공되지 않아 실제 AI 경로와 iPhone 실기기를 검증하지 못했다.
-- JSON 저장소를 기획서의 SQLite로 바꾸고 백업 복구 리허설을 해야 한다.
+- SQLite 상태 행을 기획서의 개별 테이블로 정규화하고 Mac mini에서 백업·복구 리허설을 해야 한다.
 - 콘텐츠는 자체 작성 60개 개발 시드이며, 기획서의 3,000개 콘텐츠와 검수량에는 못 미친다.
 - 서버 실패 후 답안 큐의 중복 전송, 장기 오프라인 세션, 전원 차단·동시 요청을 실기기에서 검증해야 한다.
 - 실제 API 사용량/청구를 계측해 월 KRW 5,000 이하를 확인해야 한다.

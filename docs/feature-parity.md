@@ -14,6 +14,6 @@
 | AI 이어 말하기·종료 교정 | Anthropic 어댑터와 영속 세션 구현 | 실제 모델 응답 품질·비용 회귀 검수 |
 | 오늘의 단어를 말하기에 적용 | 서버에서 깨끗한 사용 시 하루 한 번 SRS 반영 | 목표 단어 정확도와 동시 세션 검수 |
 | 40턴/일, 월 600턴 안전 한도 | 서버 강제 | KRW 5,000 청구 비용 계측은 미구현 |
-| Mac mini + Tailscale + SQLite | Compose/Tailscale 절차 작성, 현재 JSON 저장 | Mac mini 설치와 SQLite 전환 |
+| Mac mini + Tailscale + SQLite | Compose/Tailscale 절차 작성, SQLite 단일 상태 행 사용 | Mac mini 설치와 SQLite 테이블 정규화 |
 | PWA 홈 화면 설치 | manifest/아이콘/SW/SPA rewrite 구현 | iPhone 실기기 설치 검수 |
 | Speak/말해보카 참고 | 공개 자료와 기획서의 기능 개념만 사용 | 상용 앱 직접 사용·자산 복제 없음 |

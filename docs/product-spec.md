@@ -212,5 +212,5 @@ SQLite를 하루 한 번 별도 폴더나 외장 디스크로 복사한다. 학�
 - `apps/web`에 S1–S15 화면과 서버 API 연결을 구현했다. 앱은 API 주소가 없으면 체험 모드, 연결 실패 시 오프라인 상태를 표시한다.
 - `apps/server`에 레벨 테스트, stage 0–5 SRS, 학습 세션, 오답, 설정, 통계, 8개 상황과 대화 API를 구현했다. 서버 단위 테스트와 임시 HTTP 검사를 통과했다.
 - 녹음은 `MediaRecorder`에서 서버 OpenAI STT로 전달되며 파일을 저장하지 않는다. 실제 iPhone 마이크/음성 품질은 검증 전이다.
-- 기획서의 SQLite는 아직 적용하지 못했고 단일 프로세스 JSON 저장소를 사용한다. Mac mini 설치, Tailscale, 실제 AI 키, 비용 계측, 3,000단어 콘텐츠는 출시 차단점이다.
+- SQLite 저장소는 적용했으나 현재 `app_state` 한 행에 상태를 보관한다. 기획서의 개별 테이블은 아직 적용하지 못했다. Mac mini 설치, Tailscale, 실제 AI 키, 비용 계측, 3,000단어 콘텐츠는 출시 차단점이다.
 - 상세 판정은 `docs/feature-parity.md`, `tests/acceptance-plan.md`, `docs/architecture.md`를 따른다.

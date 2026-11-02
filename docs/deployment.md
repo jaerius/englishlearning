@@ -4,7 +4,7 @@
 
 ## 1. 현재 저장소의 한계
 
-서버 데이터는 아직 SQLite가 아니라 `/data/lingo-loop.json` 한 파일이다. 쓰기는 임시 파일을 만든 뒤 원자적으로 교체하고 프로세스 안에서 직렬화된다. 따라서 **API 컨테이너를 정확히 한 개만** 실행해야 한다. Docker Compose의 `scale`, 다중 Node 프로세스, 공유 네트워크 파일시스템은 사용하지 않는다. SQLite 마이그레이션 전까지 백업·스키마 마이그레이션·손상 복구 기능은 제한적이다.
+서버는 `/data/lingo-loop.sqlite`의 SQLite 데이터베이스를 사용한다. WAL과 트랜잭션으로 상태를 저장하고 백업 API로 실행 중 일관된 사본을 만든다. 현재는 기획서의 여러 정규화 테이블 대신 `app_state` 한 행에 앱 상태를 담는다. 개인용 단일 API 컨테이너만 실행하고, Mac mini에서 정전·복구 리허설을 해야 한다.
 
 ## 2. Mac mini 준비와 실행
 
@@ -55,23 +55,21 @@ Preview 배포를 검사할 때만 쉼표로 preview origin을 추가한다. 와
 
 ## 5. 백업과 복구
 
-수동 백업은 실행 중인 컨테이너의 완성된 데이터 파일을 복사하고 JSON 파싱까지 확인한다.
+백업 스크립트는 실행 중인 API의 SQLite backup API로 `deploy/data/backups/lingo-loop-*.sqlite`를 만든 뒤 무결성을 검사한다. 30일보다 오래된 사본은 삭제한다.
 
 ```bash
 chmod +x deploy/backup.sh deploy/restore.sh
 ./deploy/backup.sh
 ```
 
-macOS `launchd`나 개인 스케줄러에서 매일 새벽 한 번 `deploy/backup.sh`를 실행한다. 스크립트는 30일보다 오래된 백업을 지운다. 같은 디스크 고장에 대비하려면 `deploy/backups`를 암호화된 외장 디스크나 개인 백업 위치에 추가로 복사한다.
-
-복구는 API를 중단하고 현재 파일을 `pre-restore-*`로 보존한 뒤 원자적으로 교체한다.
+macOS `launchd`에서 매일 한 번 실행한다. 같은 디스크 고장에 대비해 백업 디렉터리를 암호화된 외장 디스크에도 복사한다. 복구 스크립트는 입력 파일의 SQLite 무결성을 검사하고 현재 상태를 먼저 백업한 다음 API를 멈춰 교체한다.
 
 ```bash
-./deploy/restore.sh deploy/backups/lingo-loop-YYYYMMDDTHHMMSSZ.json
+./deploy/restore.sh deploy/data/backups/lingo-loop-YYYYMMDDTHHMMSSZ.sqlite
 curl --fail http://127.0.0.1:3001/api/health
 ```
 
-복구 후 홈의 학습 수, 오답노트, 최근 기록을 함께 확인한다.
+복구 후 홈의 학습 수, 오답노트, 말하기 기록을 함께 확인한다.
 
 ## 6. iPhone 출시 전 확인
 
@@ -93,4 +91,4 @@ docker compose -f deploy/compose.yaml --env-file deploy/.env logs --tail=200 api
 curl --fail https://<mac-name>.<tailnet>.ts.net/api/health
 ```
 
-업데이트할 때는 먼저 백업한 뒤 `docker compose ... build`와 `docker compose ... up -d`를 실행한다. 컨테이너가 unhealthy면 새 기능 검수 전에 로그와 데이터 파일 JSON 파싱부터 확인한다.
+업데이트할 때는 먼저 백업한 뒤 `docker compose ... build`와 `docker compose ... up -d`를 실행한다. 컨테이너가 unhealthy면 새 기능 검수 전에 로그와 데이터 파일 SQLite 무결성 검사부터 확인한다.
