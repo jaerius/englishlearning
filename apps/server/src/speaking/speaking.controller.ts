@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Post, UploadedFile, UseInterceptors, BadRequestException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { CreateCustomScenarioDto, RepeatCheckDto, SpeakingTurnDto, StartSpeakingSessionDto } from './speaking.dto.js';
+import { CreateCustomScenarioDto, RepeatCheckDto, SavePhraseDto, SpeakingTurnDto, StartSpeakingSessionDto } from './speaking.dto.js';
 import { SpeakingService } from './speaking.service.js';
 
 @Controller('speaking')
@@ -9,6 +9,9 @@ export class SpeakingController {
   @Get('scenarios') scenarios() { return this.service.scenarios(); }
   @Get('sessions/recent') recent() { return this.service.recent(); }
   @Get('target-words') targetWords() { return this.service.targetWords(); }
+  @Get('phrases') phrases() { return this.service.phrases(); }
+  @Post('phrases') savePhrase(@Body() body: SavePhraseDto) { return this.service.savePhrase(body); }
+  @Delete('phrases/:id') deletePhrase(@Param('id') id: string) { return this.service.deletePhrase(id); }
   @Post('scenarios/custom') createCustom(@Body() body: CreateCustomScenarioDto) { return this.service.createCustom(body); }
   @Post('sessions') start(@Body() body: StartSpeakingSessionDto) { return this.service.start(body); }
   @Post('sessions/:id/turn') turn(@Param('id') id: string, @Body() body: SpeakingTurnDto) { return this.service.turn(id, body); }

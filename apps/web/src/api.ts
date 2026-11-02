@@ -12,6 +12,7 @@ export type LevelQuestion={wordId:string;level:number;word:string;pos:string;opt
 export type SpeakingScenario={id:string;title:string;description:string;level:number;role:string;situation:string;isCustom:boolean};
 export type SpeakingSession={id:string;scenarioId:string;cefr:string;targetWords:Array<{id:string;word:string;meaningKo:string}>;messages:Array<{id:string;role:'user'|'ai';text:string}>;usedWordIds:string[];finishedAt:string|null;summary:SpeakingSummary|null};
 export type SpeakingSummary={corrections:Array<{original:string;corrected:string;explanationKo:string}>;expressions:Array<{phrase:string;meaningKo:string}>;targetWords:Array<{id:string;word:string;used:boolean}>};
+export type SavedPhrase={id:string;phrase:string;meaningKo:string;savedAt:string};
 const base=(import.meta.env.VITE_API_BASE_URL as string|undefined)?.replace(/\/$/,'');
 export const isApiConfigured=Boolean(base);
 export class ApiError extends Error{constructor(public readonly status:number,message:string){super(message)}}
@@ -40,6 +41,7 @@ export const api={
  answer:(answer:StudyAnswer)=>request('/study/answers',{method:'POST',body:JSON.stringify(answer)}),finishStudy:(id:string)=>request<StudyResult>(`/study/sessions/${id}/finish`,{method:'POST'}),
  scenarios:()=>request<SpeakingScenario[]>('/speaking/scenarios'),
  recentSpeaking:()=>request<Array<{id:string;title:string;finishedAt:string;turns:number;summary:SpeakingSummary}>>('/speaking/sessions/recent'),
+ phrases:()=>request<SavedPhrase[]>('/speaking/phrases'),savePhrase:(phrase:string,meaningKo:string)=>request<SavedPhrase>('/speaking/phrases',{method:'POST',body:JSON.stringify({phrase,meaningKo})}),deletePhrase:(id:string)=>request<{deleted:true}>(`/speaking/phrases/${encodeURIComponent(id)}`,{method:'DELETE'}),
  targetWords:()=>request<Array<{id:string;word:string;meaningKo:string}>>('/speaking/target-words'),
  customScenario:(text:string,level:number)=>request<SpeakingScenario>('/speaking/scenarios/custom',{method:'POST',body:JSON.stringify({text,level})}),
  startSpeaking:(scenarioId:string,cefr:string,targetWords:Array<{id:string;word:string;meaningKo:string}>)=>request<SpeakingSession>('/speaking/sessions',{method:'POST',body:JSON.stringify({scenarioId,cefr,targetWords})}),

@@ -4,4 +4,5 @@ export type StudySession = { id: string; kind: 'daily'|'review'|'level_test'; st
 export type StudyLog = { id: string; sessionId: string; wordId: string; quizType: 'A'|'B'|'C'|'S'; attempt: number; isCorrect: boolean; hintUsed: boolean; answeredAt: string };
 export type DailyStat = { date: string; studiedCount: number; correctCount: number; sessionCount: number; aiTurns: number; sttRequests?: number; anthropicInputTokens?: number; anthropicOutputTokens?: number };
 export type Settings = { dailyNewCount: number; reviewCap: number; userLevel: number|null; soundOn: boolean; ttsRate: 0.8|1; ttsAutoplay: boolean; speakAutoSend: boolean; useTargetWords: boolean; dailyAiTurnLimit: number };
-export type Database = { words: Word[]; userWords: UserWord[]; studySessions: StudySession[]; studyLogs: StudyLog[]; dailyStats: DailyStat[]; settings: Settings };
+export type SavedPhrase = { id: string; phrase: string; meaningKo: string; savedAt: string };
+export type Database = { words: Word[]; userWords: UserWord[]; studySessions: StudySession[]; studyLogs: StudyLog[]; dailyStats: DailyStat[]; settings: Settings; savedPhrases?: SavedPhrase[] };

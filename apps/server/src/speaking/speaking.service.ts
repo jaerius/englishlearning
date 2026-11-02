@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { kstDate } from '../common/date.js';
 import type { Database, DailyStat } from '../common/models.js';
 import { StoreService } from '../common/store.service.js';
-import { CreateCustomScenarioDto, RepeatCheckDto, SpeakingTurnDto, StartSpeakingSessionDto } from './speaking.dto.js';
+import { CreateCustomScenarioDto, RepeatCheckDto, SavePhraseDto, SpeakingTurnDto, StartSpeakingSessionDto } from './speaking.dto.js';
 import type { SpeakingData, SpeakingScenario, SpeakingSession } from './speaking.models.js';
 import { SpeakingProvider } from './speaking.provider.js';
 import { DEFAULT_SCENARIOS } from './speaking.scenarios.js';
@@ -14,6 +14,31 @@ type SpeakingDatabase = Database & SpeakingData;
 @Injectable()
 export class SpeakingService {
   constructor(private readonly store: StoreService, private readonly provider: SpeakingProvider) {}
+
+  phrases() {
+    return (this.store.snapshot().savedPhrases ?? []).sort((a, b) => b.savedAt.localeCompare(a.savedAt));
+  }
+
+  async savePhrase(input: SavePhraseDto) {
+    return this.store.update(db => {
+      db.savedPhrases ??= [];
+      const phrase = input.phrase.trim(), meaningKo = input.meaningKo.trim();
+      const existing = db.savedPhrases.find(item => item.phrase.toLocaleLowerCase('en-US') === phrase.toLocaleLowerCase('en-US'));
+      if (existing) return existing;
+      const saved = { id: randomUUID(), phrase, meaningKo, savedAt: new Date().toISOString() };
+      db.savedPhrases.push(saved);
+      return saved;
+    });
+  }
+
+  async deletePhrase(id: string) {
+    return this.store.update(db => {
+      const index = (db.savedPhrases ?? []).findIndex(item => item.id === id);
+      if (index < 0) throw new NotFoundException({ code: 'PHRASE_NOT_FOUND', message: '저장한 표현을 찾을 수 없습니다.' });
+      db.savedPhrases!.splice(index, 1);
+      return { deleted: true };
+    });
+  }
 
   scenarios(): SpeakingScenario[] {
     return this.allScenarios(this.store.snapshot() as SpeakingDatabase);

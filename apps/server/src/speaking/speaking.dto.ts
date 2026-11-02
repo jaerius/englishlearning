@@ -26,3 +26,8 @@ export class RepeatCheckDto {
   @IsString() @IsNotEmpty() @MaxLength(2000) reference!: string;
   @IsString() @IsNotEmpty() @MaxLength(2000) text!: string;
 }
+
+export class SavePhraseDto {
+  @IsString() @IsNotEmpty() @MaxLength(200) phrase!: string;
+  @IsString() @IsNotEmpty() @MaxLength(200) meaningKo!: string;
+}

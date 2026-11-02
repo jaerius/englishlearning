@@ -67,6 +67,14 @@ try {
   await page.getByRole('button', { name: '종료' }).click();
   await page.waitForURL('**/speaking/summary');
   await page.getByText('3턴').waitFor();
+  await page.getByRole('button', { name: '표현 저장' }).click();
+  await page.getByRole('button', { name: '저장됨' }).waitFor();
+  await page.goto(`${web}/speaking/phrases`);
+  await page.getByText('That sounds interesting.', { exact: true }).waitFor();
+  await page.reload();
+  await page.getByText('That sounds interesting.', { exact: true }).waitFor();
+  await page.getByRole('button', { name: 'That sounds interesting. 삭제' }).click();
+  await page.getByText('아직 저장한 표현이 없어요.', { exact: false }).waitFor();
   await page.goto(`${web}/speaking`);
   await page.getByText('최근 대화').waitFor();
   await page.getByRole('button', { name: /카페에서 주문하기/ }).last().click();
@@ -80,7 +88,7 @@ try {
   await page.waitForFunction(() => window.__recordings >= 2, null, { timeout: 10_000 });
   await page.getByRole('button', { name: /연속 대화 끄기/ }).click();
   if (errors.length) throw Error(errors.join('\n'));
-  console.log('Full browser/API smoke passed: 20-question level test, 10-word study, quiz result, 3-turn speaking summary, recent conversation, cost display, and automatic next-turn listening');
+  console.log('Full browser/API smoke passed: level test, study, quiz, speaking summary, saved phrase lifecycle, recent conversation, cost display, and automatic next-turn listening');
 } finally {
   await browser?.close(); preview.kill('SIGTERM'); server.kill('SIGTERM'); await rm(dataDir, { recursive: true, force: true });
 }
