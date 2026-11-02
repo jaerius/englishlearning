@@ -30,7 +30,7 @@ try {
   await page.waitForURL('**/learn');
   for (let n = 0; n < 10; n++) await page.getByRole('button', { name: '알아요' }).click();
   await page.waitForURL('**/quiz');
-  for (let n = 0; n < 30 && page.url().endsWith('/quiz'); n++) {
+  for (let n = 0; n < 40 && page.url().endsWith('/quiz'); n++) {
     const next = page.getByRole('button', { name: '다음', exact: true });
     if (await next.isVisible().catch(() => false)) await next.click();
     else {
@@ -40,6 +40,7 @@ try {
     }
     await page.waitForTimeout(900);
   }
+  if (page.url().endsWith('/quiz')) await page.screenshot({path:'/tmp/lingo-quiz-stuck.png'});
   await page.waitForURL('**/result');
   await page.getByText('학습 결과').waitFor();
   await page.goto(`${web}/speaking`);

@@ -1,19 +1,30 @@
-import { BadGatewayException, Injectable, ServiceUnavailableException } from '@nestjs/common';
+import { BadGatewayException, HttpException, HttpStatus, Injectable, Optional, ServiceUnavailableException } from '@nestjs/common';
 import type { Correction, SpeakingMessage, SpeakingScenario, SpeakingSummary, TargetWord } from './speaking.models.js';
+import { StoreService } from '../common/store.service.js';
+import { monthlyCost } from '../common/cost.js';
+import { kstDate } from '../common/date.js';
 
 export type ReplyResult = { reply: string; usedWords: string[]; correction: Correction | null };
 
-type ClaudeResponse = { content?: Array<{ type: string; text?: string }> };
+type ClaudeResponse = { content?: Array<{ type: string; text?: string }>; usage?: { input_tokens?: number; output_tokens?: number } };
 
 @Injectable()
 export class SpeakingProvider {
+  constructor(@Optional() private readonly store?: StoreService) {}
   private get mockEnabled(): boolean { return process.env.SPEAKING_PROVIDER === 'mock'; }
   private get liveEnabled(): boolean { return process.env.SPEAKING_PROVIDER === 'live'; }
 
   private requireClaude(): string {
     if (this.mockEnabled) return '';
+    this.checkBudget();
     if (this.liveEnabled && process.env.ANTHROPIC_API_KEY) return process.env.ANTHROPIC_API_KEY;
     throw new ServiceUnavailableException({ code: 'SPEAKING_PROVIDER_UNAVAILABLE', message: '말하기 AI 키가 서버에 설정되지 않았습니다.' });
+  }
+
+  private checkBudget(): void {
+    if (!this.liveEnabled || !this.store) return;
+    const cost = monthlyCost(this.store.snapshot());
+    if (cost.estimatedKrw >= cost.budgetKrw) throw new HttpException({ code: 'MONTHLY_AI_BUDGET', message: '이번 달 AI 예산 한도에 도달했습니다.' }, HttpStatus.TOO_MANY_REQUESTS);
   }
 
   async transcribe(audio: Buffer, mimeType: string): Promise<string> {
@@ -22,6 +33,7 @@ export class SpeakingProvider {
       throw new BadGatewayException({ code: 'INVALID_AUDIO', message: '지원하지 않는 음성 파일이거나 크기가 너무 큽니다.' });
     }
     if (this.mockEnabled) return 'I would like a coffee, please.';
+    this.checkBudget();
     if (!this.liveEnabled || !process.env.OPENAI_API_KEY) {
       throw new ServiceUnavailableException({ code: 'STT_UNAVAILABLE', message: '음성 인식 키가 서버에 설정되지 않았습니다.' });
     }
@@ -48,6 +60,15 @@ export class SpeakingProvider {
     });
     if (!response.ok) throw new BadGatewayException({ code: 'AI_FAILED', message: '대화 AI 요청에 실패했습니다.' });
     const result = await response.json() as ClaudeResponse;
+    if (this.store && result.usage) {
+      const date = kstDate();
+      await this.store.update(db => {
+        let stat = db.dailyStats.find(item => item.date === date);
+        if (!stat) { stat = { date, studiedCount: 0, correctCount: 0, sessionCount: 0, aiTurns: 0 }; db.dailyStats.push(stat); }
+        stat.anthropicInputTokens = (stat.anthropicInputTokens ?? 0) + (result.usage?.input_tokens ?? 0);
+        stat.anthropicOutputTokens = (stat.anthropicOutputTokens ?? 0) + (result.usage?.output_tokens ?? 0);
+      });
+    }
     const raw = result.content?.find(item => item.type === 'text')?.text?.trim() ?? '';
     try { return JSON.parse(raw.replace(/^```(?:json)?\s*|\s*```$/g, '')) as T; }
     catch { throw new BadGatewayException({ code: 'AI_INVALID_RESPONSE', message: '대화 AI 응답 형식이 올바르지 않습니다.' }); }

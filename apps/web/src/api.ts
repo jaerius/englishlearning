@@ -1,6 +1,7 @@
 export type ServerSettings={dailyNewCount:number;reviewCap:number;userLevel:number|null;soundOn:boolean;ttsRate:.8|1;ttsAutoplay:boolean;speakAutoSend:boolean;useTargetWords:boolean;dailyAiTurnLimit:number};
 export type StatsSummary={streak:number;masteredCount:number;weeklyAccuracy:number;today:{studiedCount:number;goal:number;dueCount:number;wrongCount:number;aiTurns:number}};
 export type WeeklyStat={date:string;studiedCount:number;correctCount:number};
+export type MonthlyCost={month:string;inputTokens:number;outputTokens:number;sttRequests:number;estimatedKrw:number;budgetKrw:number};
 export type ServerWord={id:string;word:string;pos:string;level:number;cefr:string;meaningKo:string;exampleEn:string;exampleKo:string;hasExample:boolean;isPhrase:boolean};
 export type WrongNote={progress:{wordId:string;stage:number;wrongCount:number};word:ServerWord};
 export type StudyQuiz={wordId:string;type:'A'|'B'|'C';prompt:string;translation:string;options:string[];answer:string;stage:number};
@@ -32,7 +33,7 @@ export const api={
  word:(id:string)=>request<ServerWord&{progress:{stage:number;nextReviewAt:string;correctCount:number;wrongCount:number}|null}>(`/words/${encodeURIComponent(id)}`),
  resetWord:(id:string)=>request(`/user-words/${encodeURIComponent(id)}?action=reset`,{method:'PATCH',body:JSON.stringify({})}),
  flagUnknown:(wordId:string,flaggedUnknown:boolean)=>request(`/user-words/${encodeURIComponent(wordId)}`,{method:'PATCH',body:JSON.stringify({flaggedUnknown})}),
- summary:()=>request<StatsSummary>('/stats/summary'),weekly:()=>request<WeeklyStat[]>('/stats/weekly'),wrongNotes:(sort='count')=>request<WrongNote[]>(`/review/wrong-notes?sort=${sort}`),words:()=>request<ServerWord[]>('/words'),
+ summary:()=>request<StatsSummary>('/stats/summary'),weekly:()=>request<WeeklyStat[]>('/stats/weekly'),cost:()=>request<MonthlyCost>('/stats/cost'),wrongNotes:(sort='count')=>request<WrongNote[]>(`/review/wrong-notes?sort=${sort}`),words:()=>request<ServerWord[]>('/words'),
  levelQuestions:()=>request<LevelQuestion[]>('/level-test/questions'),
  submitLevel:(answers:Array<{wordId:string;level:number;selectedMeaning:string|null}>)=>request<{level:number;perLevelCorrect:Array<{level:number;correct:number}>}>('/level-test/submit',{method:'POST',body:JSON.stringify({answers})}),
  startStudy:(kind:'daily'|'review')=>request<StudySession>('/study/sessions',{method:'POST',body:JSON.stringify({kind})}),
