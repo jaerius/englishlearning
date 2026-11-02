@@ -1,0 +1,3 @@
+import { Body, Controller, Get, Patch, Param, Query } from '@nestjs/common';import { IsBoolean, IsOptional } from 'class-validator';import { ReviewService } from './review.service.js';
+class UpdateUserWordDto { @IsOptional() @IsBoolean() flaggedUnknown?:boolean }
+@Controller() export class ReviewController {constructor(private readonly service:ReviewService){} @Get('review/due')due(@Query('countOnly') countOnly?:string){return this.service.due(countOnly==='true')} @Get('review/wrong-notes')wrong(@Query('sort')sort?:string){return this.service.wrong(sort)} @Patch('user-words/:wordId')update(@Param('wordId')id:string,@Query('action')action:string|undefined,@Body()body:UpdateUserWordDto){return this.service.update(id,action,body.flaggedUnknown)} }

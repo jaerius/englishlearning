@@ -1,0 +1,2 @@
+import { Body, Controller, Get, Post } from '@nestjs/common'; import { LevelTestService } from './level-test.service.js'; import { SubmitLevelTestDto } from './level-test.dto.js';
+@Controller('level-test') export class LevelTestController { constructor(private readonly service:LevelTestService){} @Get('questions') questions(){return this.service.questions()} @Post('submit') submit(@Body() body:SubmitLevelTestDto){return this.service.submit(body)} }

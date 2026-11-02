@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { calcNext } from './srs.js';
+const now = new Date('2026-11-02T04:00:00.000Z');
+test('correct advances stage using its interval', () => assert.deepEqual(calcNext({ stage: 1, isCorrect: true, hintUsed: false, now }), { nextStage: 2, mastered: false, nextReviewAt: '2026-11-05' }));
+test('wrong drops two stages and reviews tomorrow', () => assert.deepEqual(calcNext({ stage: 4, isCorrect: false, hintUsed: false, now }), { nextStage: 2, mastered: false, nextReviewAt: '2026-11-03' }));
+test('hint keeps stage', () => assert.deepEqual(calcNext({ stage: 3, isCorrect: true, hintUsed: true, now }), { nextStage: 3, mastered: false, nextReviewAt: '2026-11-09' }));
+test('stage five correct masters for sixty days', () => assert.deepEqual(calcNext({ stage: 5, isCorrect: true, hintUsed: false, now }), { nextStage: 5, mastered: true, nextReviewAt: '2027-01-01' }));
+test('uses the Seoul calendar date immediately before midnight', () => assert.equal(calcNext({ stage: 0, isCorrect: false, hintUsed: false, now: new Date('2026-11-02T14:59:59.999Z') }).nextReviewAt, '2026-11-03'));
+test('rolls to the next Seoul calendar date at midnight', () => assert.equal(calcNext({ stage: 0, isCorrect: false, hintUsed: false, now: new Date('2026-11-02T15:00:00.000Z') }).nextReviewAt, '2026-11-04'));

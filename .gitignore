@@ -1,4 +1,6 @@
 node_modules/
 .expo/
 dist/
+*.tsbuildinfo
+apps/web/artifacts/
 .DS_Store

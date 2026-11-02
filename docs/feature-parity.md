@@ -1,17 +1,19 @@
-# Feature parity and acceptance status
+# 기획서 기능 대조표
 
-Parity means independently delivering the learner's task, not copying Speak or WordVoca assets, wording, layout, or code. Publicly observed concepts and inferences are tracked in `competitor-analysis.md`.
+기준 문서: `docs/product-spec.md`. 이 표의 '구현'은 코드와 로컬 테스트 기준이며 iPhone 실기기/운영 배포 합격을 뜻하지 않는다.
 
-| Learner task | Current web implementation | Acceptance condition | Status |
-| --- | --- | --- | --- |
-| Open on iPhone | Vite bundle builds | Public or user-accessible HTTPS URL opens on a physical iPhone | Unverified |
-| Converse without touching screen every turn | Foreground turn controller stops recognition for TTS and attempts to restart afterward | 10-minute multi-turn real-device test with interruption recovery | Browser mock tests pass; iPhone behavior unverified |
-| Receive useful speaking feedback | Fixed response template and browser TTS | Diverse utterances receive relevant correction and next prompt | Not implemented |
-| Save a voice note | MediaRecorder to IndexedDB | Recording survives reload and browser restart on iPhone | Chromium mock-microphone reload test passes; iPhone pending |
-| Remove recordings after three days | Prune on next app open | Expired Blob removed on reopen and clearly described to users | Implemented in code; device test pending |
-| Build vocabulary collection | Three sample cards | Add, edit, search, delete, import/export original or licensed content | Not implemented |
-| Study at appropriate intervals | `ts-fsrs` FSRS-7 per-card state and atomic review logs | Review logs persist and reference cases pass | Browser review reload passes; broader histories and iPhone pending |
-| Keep paid API below KRW 5,000/month | No paid API use | Metered production usage and server-enforced cap | Current code: KRW 0; production budget unverified |
-| Resume reliably | IndexedDB cards, review logs and audio; learning-data JSON export/import | Versioned migrations, recovery, backup/export | Browser reload and export test pass; restore and iPhone pending |
-
-The current app is a working code prototype where built and tested, not a production release or full competitor parity.
+| 기획 기능 | 현재 상태 | 남은 검수 또는 작업 |
+| --- | --- | --- |
+| S1–S15 이동과 모바일 시각 디자인 | 구현 | iPhone Safari, VoiceOver와 safe area 실기기 검수 |
+| 레벨별 20문항과 결과 | 서버 문항/채점 연결 | 20문항 완료·중단·재시도 E2E |
+| 새 단어 카드, 복습 A/B/C, 힌트, 오답 재출제 | 서버 세션과 웹 퀴즈 연결 | 오프라인 재전송·점수 시나리오 E2E |
+| Stage 0–5 SRS와 KST 날짜 | 서버 구현·단위 테스트 통과 | 데이터 이행과 장기 이력 검증 |
+| 오답노트·설정·최근 기록 | 일부 서버 연결 | 기록 그래프의 실제 7일 자료 연결, 초기화 API |
+| 8개 기본 상황과 사용자 상황 | 서버 API 구현 | 실제 AI 키로 생성 품질 검수 |
+| 30초 녹음과 STT | 웹 MediaRecorder와 OpenAI 서버 어댑터 구현 | iPhone 권한·포맷·잠금·중단 검수 |
+| AI 이어 말하기·종료 교정 | Anthropic 어댑터와 영속 세션 구현 | 실제 모델 응답 품질·비용 회귀 검수 |
+| 오늘의 단어를 말하기에 적용 | 서버에서 깨끗한 사용 시 하루 한 번 SRS 반영 | 목표 단어 정확도와 동시 세션 검수 |
+| 40턴/일, 월 600턴 안전 한도 | 서버 강제 | KRW 5,000 청구 비용 계측은 미구현 |
+| Mac mini + Tailscale + SQLite | Compose/Tailscale 절차 작성, 현재 JSON 저장 | Mac mini 설치와 SQLite 전환 |
+| PWA 홈 화면 설치 | manifest/아이콘/SW/SPA rewrite 구현 | iPhone 실기기 설치 검수 |
+| Speak/말해보카 참고 | 공개 자료와 기획서의 기능 개념만 사용 | 상용 앱 직접 사용·자산 복제 없음 |

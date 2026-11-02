@@ -1,0 +1,2 @@
+import { Injectable, NotFoundException } from '@nestjs/common'; import { StoreService } from '../common/store.service.js';
+@Injectable() export class WordsService { constructor(private readonly store: StoreService) {} list(level?: number) { return this.store.snapshot().words.filter(word => !level || word.level === level); } one(id: string) { const db=this.store.snapshot(), word=db.words.find(item=>item.id===id), progress=db.userWords.find(item=>item.wordId===id); if(!word) throw new NotFoundException('WORD_NOT_FOUND'); return { ...word, progress: progress || null }; } }

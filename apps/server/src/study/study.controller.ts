@@ -1,0 +1,2 @@
+import { Body, Controller, Param, Post } from '@nestjs/common'; import { StudyService } from './study.service.js'; import { CreateStudySessionDto, SubmitAnswerDto } from './study.dto.js';
+@Controller('study') export class StudyController { constructor(private readonly service:StudyService){} @Post('sessions') create(@Body() body:CreateStudySessionDto){return this.service.create(body)} @Post('answers') answer(@Body() body:SubmitAnswerDto){return this.service.answer(body)} @Post('sessions/:id/finish') finish(@Param('id') id:string){return this.service.finish(id)} }

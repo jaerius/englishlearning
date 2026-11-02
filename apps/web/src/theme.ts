@@ -1,0 +1,1 @@
+export const tokens = { color:{ bg:'#FAFAF7',card:'#FFFFFF',text:'#1A1A1A',muted:'#6B7280',line:'#E5E7EB',primary:'#4F46E5',success:'#16A34A',danger:'#EF4444',streak:'#F59E0B',soft:'#EEF2FF' }, radius:{button:16,card:20}, space:{xs:8,sm:12,md:16,lg:24} } as const;

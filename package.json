@@ -4,9 +4,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "vite --host 0.0.0.0",
-    "web": "vite",
-    "web:build": "vite build",
+    "start": "npm --prefix apps/web run dev -- --host 0.0.0.0",
+    "web": "npm --prefix apps/web run dev",
+    "web:build": "npm --prefix apps/web run build",
+    "server": "npm --prefix apps/server run dev",
+    "server:build": "npm --prefix packages/content run build && npm --prefix apps/server run build",
+    "test": "npm --prefix packages/content test && npm --prefix apps/server test && npm --prefix apps/server-speaking test && npm --prefix apps/web run build",
+    "test:app": "node scripts/app-smoke.mjs",
+    "test:full": "npm run server:build && VITE_API_BASE_URL=http://127.0.0.1:34568 npm --prefix apps/web run build && node scripts/full-smoke.mjs",
     "test:smoke": "node scripts/smoke.mjs",
     "test:voice": "node web/src/voice.test.mjs"
   },

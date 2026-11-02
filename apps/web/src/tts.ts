@@ -1,0 +1,3 @@
+const preferred=['Samantha','Aaron','Daniel','Ava','Karen'];
+export function availableEnglishVoices(){return speechSynthesis.getVoices().filter(v=>/^en[-_]/i.test(v.lang)).sort((a,b)=>{const ai=preferred.findIndex(n=>a.name.includes(n)),bi=preferred.findIndex(n=>b.name.includes(n));return(ai<0?99:ai)-(bi<0?99:bi)});}
+export function speakEnglish(text:string,rate=.8,voiceName=''){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=rate;const voices=availableEnglishVoices(),voice=voices.find(v=>v.name===voiceName)||voices[0];if(voice)u.voice=voice;speechSynthesis.speak(u)}

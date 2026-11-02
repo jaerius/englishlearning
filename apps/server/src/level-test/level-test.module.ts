@@ -1,0 +1,1 @@
+import { Module } from '@nestjs/common'; import { LevelTestController } from './level-test.controller.js'; import { LevelTestService } from './level-test.service.js'; @Module({controllers:[LevelTestController],providers:[LevelTestService]}) export class LevelTestModule {}

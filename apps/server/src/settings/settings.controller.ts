@@ -1,0 +1,2 @@
+import { Body, Controller, Get, Post, Put } from '@nestjs/common'; import { SettingsService } from './settings.service.js'; import { ResetSettingsDto, UpdateSettingsDto } from './settings.dto.js';
+@Controller('settings') export class SettingsController { constructor(private readonly service: SettingsService) {} @Get() get() { return this.service.get(); } @Put() update(@Body() body: UpdateSettingsDto) { return this.service.update(body); } @Post('reset') reset(@Body() _body: ResetSettingsDto) { return this.service.reset(); } }

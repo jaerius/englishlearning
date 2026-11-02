@@ -2,7 +2,7 @@
 
 ## Status (2026-11-02, Korea time)
 
-Direct requests to `speak.com`, `wordvoca.com`, and the cited Speak App Store page returned proxy HTTP 403. No screenshots, reviews, help pages, account walkthroughs, or user-provided references were available. Therefore **no specific Speak or WordVoca feature has been directly verified in this research pass**. The previous version of this document incorrectly implied those sources and reviews were read; that claim has been removed.
+Direct requests to `speak.com`, `wordvoca.com`, and the cited Speak App Store page returned proxy HTTP 403. On 2026-11-02, repeated HTTPS HEAD requests to `www.speak.com`, `wordvoca.com`, and the user's live `englishlearning-phi.vercel.app` all failed at the egress proxy's CONNECT step with HTTP 403. The local `/etc/codex/network-policy.json` does not include these hosts. This failure occurs before the sites respond and before any page JavaScript or login screen can run; it does not establish anything about their availability to an ordinary browser. No screenshots, reviews, help pages, account walkthroughs, or user-provided references were available. Therefore **no specific Speak or WordVoca feature has been directly verified in this research pass**. The previous version of this document incorrectly implied those sources and reviews were read; that claim has been removed.
 
 | Claim | Status | Evidence needed |
 | --- | --- | --- |
@@ -19,4 +19,4 @@ Priority order from the user's requirements: (1) reliable iPhone access and voic
 
 ## Next evidence collection
 
-Once approved network access or authorized references are available, record for each source: URL or screenshot identifier, access date, exact visible feature, screen state, and confidence. Keep observations separate from implementation guesses. Test each competitor only through normal public or authorized user flows.
+Once the managed environment's domain allowlist is updated and published, or authorized references are available, record for each source: URL or screenshot identifier, access date, exact visible feature, screen state, and confidence. The exact blocked domains seen here are `www.speak.com`, `wordvoca.com`, and `englishlearning-phi.vercel.app`; the App Store host `apps.apple.com` was also blocked in the earlier pass. Keep observations separate from implementation guesses. Test each competitor only through normal public or authorized user flows. The live site's own visual appearance must also be inspected after `englishlearning-phi.vercel.app` becomes reachable; a local screenshot alone does not prove what Vercel serves.

@@ -1,0 +1,29 @@
+{
+  "name": "@lingo-loop/server",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "predev": "npm --prefix ../../packages/content run build",
+    "dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js",
+    "prebuild": "npm --prefix ../../packages/content run build",
+    "build": "tsc -p tsconfig.json",
+    "pretest": "npm --prefix ../../packages/content run build",
+    "test": "node --import tsx --test src/**/*.test.ts"
+  },
+  "dependencies": {
+    "@lingo-loop/content": "file:../../packages/content",
+    "@nestjs/common": "^11.1.6",
+    "@nestjs/core": "^11.1.6",
+    "@nestjs/platform-express": "^11.1.6",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}
