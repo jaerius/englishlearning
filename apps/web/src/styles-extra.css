@@ -13,3 +13,22 @@
 .handsFreeToggle{display:block;width:100%;min-height:42px;margin-top:10px;border:1px solid #c7d2fe;border-radius:12px;background:#eef2ff;color:#4338ca;font-size:12px;font-weight:800}.handsFreeToggle.active{background:#dcfce7;border-color:#bbf7d0;color:#15803d}.handsFreeToggle:disabled{opacity:.45}
 
 .savedLead{color:#6b7280;line-height:1.55;margin:24px 2px}.savedEmpty{background:#fff;border-radius:18px;padding:22px;color:#6b7280;line-height:1.6}.savedList{display:grid;gap:12px}.savedList article{background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:16px;display:flex;align-items:center;gap:8px}.savedList article div{flex:1;display:grid;gap:7px}.savedList article strong{font-size:16px}.savedList article span{font-size:13px;color:#6b7280}.savedList article button{border:0;background:#eef2ff;color:#4f46e5;width:38px;height:38px;border-radius:11px;display:grid;place-items:center}.savedList article button:last-child{background:#fef2f2;color:#dc2626}.savedList article svg{width:18px}.phraseSave{border:1px solid #c7d2fe;background:#eef2ff;color:#4338ca;border-radius:9px;padding:7px 9px;margin-left:8px;font-size:12px;font-weight:750}.phraseSave:disabled{opacity:.5}
+
+/* Speaking situations use the context of each conversation as their visual cue. */
+.scenarioGrid .scenario{transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease}
+.scenarioGrid .scenario:active{transform:scale(.985)}
+.scenarioGrid .scenario:first-child{grid-column:1 / -1;min-height:176px;padding:19px 20px;background:linear-gradient(120deg,#edeaff,#f8f7ff);border-color:#ded9ff;display:grid;grid-template-columns:54px 1fr;align-content:center;column-gap:16px}
+.scenarioGrid .scenario:first-child .scenarioIcon{grid-row:1 / 4;align-self:center;width:54px;height:54px;font-size:28px}
+.scenarioGrid .scenario:first-child span,.scenarioGrid .scenario:first-child b,.scenarioGrid .scenario:first-child p{grid-column:2;margin-top:0}
+.scenarioGrid .scenario:first-child b{font-size:18px;margin-top:5px}
+.scenarioGrid .scenario:first-child p{max-width:240px;margin-top:6px}
+.scenarioIcon{width:48px;height:48px;border-radius:15px;background:#eef2ff;display:grid;place-items:center;font-size:23px;margin-bottom:13px}
+.scenario--cafe .scenarioIcon{background:#fff4e6}.scenario--airport .scenarioIcon{background:#e6f3ff}.scenario--hotel .scenarioIcon{background:#fcecf3}.scenario--restaurant .scenarioIcon{background:#fff1e8}.scenario--directions .scenarioIcon{background:#e8f6ed}.scenario--smalltalk .scenarioIcon{background:#edf1ff}.scenario--interview .scenarioIcon{background:#f1ecff}.scenario--free .scenarioIcon{background:#fff8db}
+.summary .celebrate:has(.emptySummaryAction){margin-top:18vh;padding:22px 18px 28px;background:#fff;border:1px solid #e5e7eb;border-radius:24px}
+.summary .celebrate:has(.emptySummaryAction)::before{content:'💬';display:grid;place-items:center;width:64px;height:64px;margin:0 auto 18px;border-radius:19px;background:#eef2ff;font-size:30px}
+.summary .celebrate:has(.emptySummaryAction) h1{font-size:22px}
+.summary .celebrate:has(.emptySummaryAction) p{font-size:14px;line-height:1.6}
+.emptySummaryAction{height:48px;margin-top:16px;border:0;border-radius:14px;padding:0 16px;background:#4f46e5;color:#fff;font-weight:750;display:inline-flex;align-items:center;gap:8px}
+.emptySummaryAction svg{width:17px}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #818cf8;outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.scenarioGrid .scenario,.toggle,.toggle i,.progress i{transition:none!important}.micButton.recording>svg{animation:none!important}}

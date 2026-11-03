@@ -83,7 +83,10 @@ try {
     if (layout.document > layout.viewport + 1 || layout.body > layout.viewport + 1) {
       routeErrors.push(`horizontal overflow: viewport=${layout.viewport}, document=${layout.document}, body=${layout.body}`);
     }
-    if (route.path === '/home') await page.screenshot({ path: 'apps/web/artifacts/home-final-390x844.png', fullPage: true });
+    if (['/home', '/speaking', '/speaking/summary'].includes(route.path)) {
+      const name = route.path.slice(1).replaceAll('/', '-');
+      await page.screenshot({ path: `apps/web/artifacts/${name}-final-390x844.png`, fullPage: true });
+    }
     if (routeErrors.length) failures.push(`${route.path}: ${routeErrors.join(' | ')}`);
     await page.close();
   }

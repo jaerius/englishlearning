@@ -26,3 +26,16 @@ No third-party skill has been installed into `.agents/skills/`. The local `expo-
 - Official Expo and FSRS URLs named in earlier versions were not directly opened in this research pass. They are pointers for later verification, not evidence.
 
 No API keys, Apple credentials, Expo tokens, microphone permissions, remote scripts, or external agent tools were granted access during research.
+
+## 2026-11-04 design follow-up
+
+The user requested a current design skill found on X. An X search request was attempted in the restored cloud environment and returned proxy HTTP 403. Consequently, X popularity, recency of posts, and recommendations could not be verified. No claim of X endorsement is made.
+
+Two publicly accessible GitHub alternatives were inspected in temporary clones without executing their code:
+
+| Candidate | Evidence and fit | Installation decision |
+| --- | --- | --- |
+| [Anthropic frontend-design](https://github.com/anthropics/skills/tree/main/skills/frontend-design) | Repository commit `ca45fc4` dated 2026-10-28. Its skill folder contains only `SKILL.md` and Apache-2.0 `LICENSE.txt`; no scripts, dependencies, credential requests, or tool permissions. Its design critique, typography, empty-state, focus, and motion guidance fits the React PWA. | Copied these two reviewed files to project scope at `.agents/skills/frontend-design/`. No code was run. |
+| [Vercel web-design-guidelines](https://github.com/vercel-labs/agent-skills/tree/main/skills/web-design-guidelines) | Repository commit `1a2c79d` dated 2026-10-27. The skill file requires fetching a separate current guideline URL before each review, so that network dependency would need its own verification. | Not installed; the Anthropic skill is the smaller effective set for this design pass. |
+
+The inspected skill is guidance, not an automated design test or a substitute for iPhone device validation. The resulting screen review is recorded in `docs/design-review.md`.
