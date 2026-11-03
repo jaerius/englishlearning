@@ -9,7 +9,7 @@ export class TargetWordDto {
 
 export class CreateCustomScenarioDto {
   @IsString() @IsNotEmpty() @MaxLength(200) text!: string;
-  @IsInt() @Min(1) @Max(5) level!: number;
+  @IsInt() @Min(1) @Max(6) level!: number;
 }
 
 export class StartSpeakingSessionDto {

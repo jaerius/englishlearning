@@ -42,6 +42,7 @@ test('turn response hides correction content and finish reveals the persisted su
     await service.turn(session.id, { text: 'coffee please' });
     const finished = await service.finish(session.id);
     assert.equal(finished.summary?.corrections[0].corrected, "I'd like a coffee, please.");
+    assert.match(finished.summary?.coaching?.focusKo ?? '', /주문/);
     assert.equal(store.data.speakingSessions?.[0].messages.length, 6);
     assert.equal(store.data.dailyStats[0].aiTurns, 3);
   } finally {

@@ -1,8 +1,9 @@
 export type ServerSettings={dailyNewCount:number;reviewCap:number;userLevel:number|null;soundOn:boolean;ttsRate:.8|1;ttsAutoplay:boolean;speakAutoSend:boolean;useTargetWords:boolean;dailyAiTurnLimit:number};
-export type StatsSummary={streak:number;masteredCount:number;weeklyAccuracy:number;today:{studiedCount:number;goal:number;dueCount:number;wrongCount:number;aiTurns:number}};
+export type StatsSummary={streak:number;masteredCount:number;weeklyAccuracy:number;weeklyAttemptCount?:number;today:{studiedCount:number;goal:number;dueCount:number;wrongCount:number;aiTurns:number}};
+export type CoachSummary={sampleSize:number;insufficientData:boolean;weaknesses:Array<{cefr:string;pos:string;attempts:number;wrong:number;hint:number;accuracy:number}>;recommendationKo:string;speakingCorrections?:Array<{original:string;corrected:string;explanationKo:string;at:string}>};
 export type WeeklyStat={date:string;studiedCount:number;correctCount:number};
 export type MonthlyCost={month:string;inputTokens:number;outputTokens:number;sttRequests:number;estimatedKrw:number;budgetKrw:number};
-export type ServerWord={id:string;word:string;pos:string;level:number;cefr:string;meaningKo:string;exampleEn:string;exampleKo:string;hasExample:boolean;isPhrase:boolean};
+export type ServerWord={id:string;word:string;pos:string;level:number;cefr:string;meaningKo:string;exampleEn:string;exampleKo:string;hasExample:boolean;isPhrase:boolean;spokenExampleEn?:string;writtenExampleEn?:string;usageNoteKo?:string};
 export type WrongNote={progress:{wordId:string;stage:number;wrongCount:number};word:ServerWord};
 export type StudyQuiz={wordId:string;type:'A'|'B'|'C';prompt:string;translation:string;options:string[];answer:string;stage:number};
 export type StudySession={sessionId:string;newWords:ServerWord[];quizQueue:StudyQuiz[]};
@@ -11,10 +12,19 @@ export type StudyAnswer={sessionId:string;wordId:string;quizType:'A'|'B'|'C'|'S'
 export type LevelQuestion={wordId:string;level:number;word:string;pos:string;options:string[]};
 export type SpeakingScenario={id:string;title:string;description:string;level:number;role:string;situation:string;isCustom:boolean};
 export type SpeakingSession={id:string;scenarioId:string;cefr:string;targetWords:Array<{id:string;word:string;meaningKo:string}>;messages:Array<{id:string;role:'user'|'ai';text:string}>;usedWordIds:string[];finishedAt:string|null;summary:SpeakingSummary|null};
-export type SpeakingSummary={corrections:Array<{original:string;corrected:string;explanationKo:string}>;expressions:Array<{phrase:string;meaningKo:string}>;targetWords:Array<{id:string;word:string;used:boolean}>};
+export type SpeakingSummary={corrections:Array<{original:string;corrected:string;explanationKo:string}>;expressions:Array<{phrase:string;meaningKo:string}>;targetWords:Array<{id:string;word:string;used:boolean}>;coaching?:{strengthKo:string;focusKo:string;nextPracticeKo:string}};
 export type SavedPhrase={id:string;phrase:string;meaningKo:string;savedAt:string};
-const base=(import.meta.env.VITE_API_BASE_URL as string|undefined)?.replace(/\/$/,'');
+const configuredBase=(import.meta.env.VITE_API_BASE_URL as string|undefined)?.replace(/\/$/,'');
+const savedBase=typeof window!=='undefined'?window.localStorage.getItem('lingo-loop-api-url')?.replace(/\/$/,''):undefined;
+const base=savedBase||configuredBase;
 export const isApiConfigured=Boolean(base);
+export const apiBaseUrl=base||'';
+export function saveApiBaseUrl(value:string){
+ const trimmed=value.trim().replace(/\/$/,'');
+ if(trimmed){const parsed=new URL(trimmed);if(parsed.protocol!=='https:'&&!(parsed.protocol==='http:'&&['localhost','127.0.0.1'].includes(parsed.hostname)))throw new Error('학습 서버 주소는 HTTPS여야 해요.');window.localStorage.setItem('lingo-loop-api-url',parsed.origin)}
+ else window.localStorage.removeItem('lingo-loop-api-url');
+ window.location.reload();
+}
 export class ApiError extends Error{constructor(public readonly status:number,message:string){super(message)}}
 async function request<T>(path:string,init?:RequestInit):Promise<T>{
  if(!base)throw new ApiError(0,'서버 주소가 설정되지 않았어요.');
@@ -29,12 +39,13 @@ async function upload<T>(path:string,body:FormData):Promise<T>{
  return response.json() as Promise<T>;
 }
 export const api={
+ health:()=>request<{status:string}>('/health'),
  settings:()=>request<ServerSettings>('/settings'),updateSettings:(value:Partial<ServerSettings>)=>request<ServerSettings>('/settings',{method:'PUT',body:JSON.stringify(value)}),
  resetAll:()=>request<{reset:boolean}>('/settings/reset',{method:'POST',body:JSON.stringify({confirmation:'RESET'})}),
  word:(id:string)=>request<ServerWord&{progress:{stage:number;nextReviewAt:string;correctCount:number;wrongCount:number}|null}>(`/words/${encodeURIComponent(id)}`),
  resetWord:(id:string)=>request(`/user-words/${encodeURIComponent(id)}?action=reset`,{method:'PATCH',body:JSON.stringify({})}),
  flagUnknown:(wordId:string,flaggedUnknown:boolean)=>request(`/user-words/${encodeURIComponent(wordId)}`,{method:'PATCH',body:JSON.stringify({flaggedUnknown})}),
- summary:()=>request<StatsSummary>('/stats/summary'),weekly:()=>request<WeeklyStat[]>('/stats/weekly'),cost:()=>request<MonthlyCost>('/stats/cost'),wrongNotes:(sort='count')=>request<WrongNote[]>(`/review/wrong-notes?sort=${sort}`),words:()=>request<ServerWord[]>('/words'),
+ summary:()=>request<StatsSummary>('/stats/summary'),weekly:()=>request<WeeklyStat[]>('/stats/weekly'),cost:()=>request<MonthlyCost>('/stats/cost'),coach:()=>request<CoachSummary>('/stats/coach'),wrongNotes:(sort='count')=>request<WrongNote[]>(`/review/wrong-notes?sort=${sort}`),words:()=>request<ServerWord[]>('/words'),
  levelQuestions:()=>request<LevelQuestion[]>('/level-test/questions'),
  submitLevel:(answers:Array<{wordId:string;level:number;selectedMeaning:string|null}>)=>request<{level:number;perLevelCorrect:Array<{level:number;correct:number}>}>('/level-test/submit',{method:'POST',body:JSON.stringify({answers})}),
  startStudy:(kind:'daily'|'review',wordIds?:string[])=>request<StudySession>('/study/sessions',{method:'POST',body:JSON.stringify({kind,wordIds})}),

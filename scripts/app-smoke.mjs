@@ -3,11 +3,12 @@ import { chromium } from 'playwright-core';
 
 const host = '127.0.0.1';
 const port = Number(process.env.APP_SMOKE_PORT || 4174);
+const width = Number(process.env.APP_SMOKE_WIDTH || 390);
 const baseURL = `http://${host}:${port}`;
 const preview = spawn(
-  'npm',
-  ['--prefix', 'apps/web', 'run', 'preview', '--', '--host', host, '--port', String(port)],
-  { cwd: new URL('..', import.meta.url), stdio: ['ignore', 'pipe', 'pipe'] },
+  'node',
+  ['node_modules/vite/bin/vite.js', 'preview', '--host', host, '--port', String(port)],
+  { cwd: new URL('../apps/web/', import.meta.url), stdio: ['ignore', 'pipe', 'pipe'] },
 );
 
 let previewOutput = '';
@@ -29,7 +30,7 @@ async function waitForPreview() {
 
 const routes = [
   { path: '/level', text: '내 수준 알아보기', cta: '시작하기' },
-  { path: '/home', text: '오늘도 좋은 흐름이에요', cta: /학습하기|학습 시작/ },
+  { path: '/home', text: '오늘부터 시작해요', cta: /학습하기|학습 시작/ },
   { path: '/learn', text: '카드를 눌러 뜻 보기', cta: '알아요' },
   { path: '/quiz', text: '알맞은 뜻을 골라 보세요' },
   { path: '/speaking', text: '추천 상황', cta: '내가 만든 상황으로 연습' },
@@ -45,7 +46,7 @@ try {
   await waitForPreview();
   browser = await chromium.launch({ executablePath: '/usr/bin/chromium', args: ['--no-sandbox'] });
   const context = await browser.newContext({
-    viewport: { width: 390, height: 844 },
+    viewport: { width, height: 844 },
     isMobile: true,
     hasTouch: true,
     locale: 'ko-KR',
@@ -85,14 +86,14 @@ try {
     }
     if (['/home', '/speaking', '/speaking/summary'].includes(route.path)) {
       const name = route.path.slice(1).replaceAll('/', '-');
-      await page.screenshot({ path: `apps/web/artifacts/${name}-final-390x844.png`, fullPage: true });
+      await page.screenshot({ path: `apps/web/artifacts/${name}-final-${width}x844.png`, fullPage: true });
     }
     if (routeErrors.length) failures.push(`${route.path}: ${routeErrors.join(' | ')}`);
     await page.close();
   }
 
   if (failures.length) throw new Error(`Mobile app smoke failed:\n${failures.join('\n')}`);
-  console.log(`Mobile app smoke passed: ${routes.length} routes at 390x844, direct navigation, CTAs, runtime errors, and horizontal overflow`);
+  console.log(`Mobile app smoke passed: ${routes.length} routes at ${width}x844, direct navigation, CTAs, runtime errors, and horizontal overflow`);
 } finally {
   await browser?.close();
   preview.kill('SIGTERM');

@@ -13,9 +13,9 @@ function fixture(): { db: Database; service: ReviewService } {
   return { db, service: new ReviewService(store) };
 }
 
-test('the shared content package is the single 60-word seed', () => {
-  assert.equal(seededWords().length, 60);
-  assert.equal(new Set(seededWords().map(word => word.id)).size, 60);
+test('the shared content package has unique seeded word ids', () => {
+  assert.ok(seededWords().length >= 60);
+  assert.equal(new Set(seededWords().map(word => word.id)).size, seededWords().length);
 });
 
 test('mastered words return to due review when their date arrives', () => {

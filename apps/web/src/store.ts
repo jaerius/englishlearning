@@ -1,19 +1,182 @@
-import{create}from'zustand';import{persist}from'zustand/middleware';import{api,isApiConfigured,ApiError,ServerSettings,ServerWord,StudyAnswer,StudyQuiz,StudyResult,WeeklyStat}from'./api';import{words,Word}from'./data';
-export type Settings={level:number;dailyNew:number;reviewCap:number;ttsRate:.8|1;voiceName:string;sound:boolean;autoplay:boolean;autoSend:boolean;targetWords:boolean};
-type SyncStatus='connecting'|'online'|'offline'|'demo';
-type State={settings:Settings;streak:number;studied:number;dueCount:number;aiTurns:number;weeklyAccuracy:number;weekly:WeeklyStat[];cards:Word[];testAnswers:number[];wrongIds:string[];syncStatus:SyncStatus;syncMessage:string;sessionId:string|null;quizQueue:StudyQuiz[];newWords:Word[];lastResult:StudyResult|null;pendingAnswers:StudyAnswer[];bootstrap:()=>Promise<void>;setSettings:(p:Partial<Settings>)=>void;setTest:(a:number[])=>void;startStudy:(kind?:'daily'|'review',wordIds?:string[])=>Promise<void>;answer:(id:string,ok:boolean,hintUsed?:boolean)=>Promise<void>;finishStudy:()=>Promise<void>;flushPending:()=>Promise<void>;reset:()=>void};
-const initial:Settings={level:3,dailyNew:10,reviewCap:30,ttsRate:.8,voiceName:'',sound:true,autoplay:true,autoSend:true,targetWords:true};
-const toSettings=(v:ServerSettings,voiceName=''):Settings=>({level:v.userLevel||1,dailyNew:v.dailyNewCount,reviewCap:v.reviewCap,ttsRate:v.ttsRate,voiceName,sound:v.soundOn,autoplay:v.ttsAutoplay,autoSend:v.speakAutoSend,targetWords:v.useTargetWords});
-const toServer=(v:Partial<Settings>):Partial<ServerSettings>=>{const r:Partial<ServerSettings>={};if(v.level!==undefined)r.userLevel=v.level;if(v.dailyNew!==undefined)r.dailyNewCount=v.dailyNew;if(v.reviewCap!==undefined)r.reviewCap=v.reviewCap;if(v.ttsRate!==undefined)r.ttsRate=v.ttsRate;if(v.sound!==undefined)r.soundOn=v.sound;if(v.autoplay!==undefined)r.ttsAutoplay=v.autoplay;if(v.autoSend!==undefined)r.speakAutoSend=v.autoSend;if(v.targetWords!==undefined)r.useTargetWords=v.targetWords;return r};
-const toWord=(w:ServerWord,stage=0,wrong=0):Word=>({id:w.id,word:w.word,meaning:w.meaningKo,pos:w.pos,example:w.exampleEn,translation:w.exampleKo,level:w.level,stage,wrong});
-export const useApp=create<State>()(persist((set,get)=>({
- settings:initial,streak:7,studied:12,dueCount:18,aiTurns:4,weeklyAccuracy:82,weekly:[18,30,24,42,12,36,28].map((studiedCount,i)=>({date:String(i),studiedCount,correctCount:Math.round(studiedCount*.82)})),cards:words,testAnswers:[],wrongIds:['1','3'],syncStatus:isApiConfigured?'connecting':'demo',syncMessage:isApiConfigured?'서버에 연결하는 중이에요':'체험 모드 · 화면의 기록은 예시입니다. 서버 연결 후 저장돼요',sessionId:null,quizQueue:[],newWords:[],lastResult:null,pendingAnswers:[],
- bootstrap:async()=>{if(!isApiConfigured)return;set({syncStatus:'connecting',syncMessage:'학습 데이터를 불러오는 중이에요'});try{const [settings,summary,wrongNotes,serverWords,weekly]=await Promise.all([api.settings(),api.summary(),api.wrongNotes(),api.words(),api.weekly()]);const progress=new Map(wrongNotes.map(item=>[item.word.id,item.progress]));set(state=>({settings:toSettings(settings,state.settings.voiceName),streak:summary.streak,studied:summary.today.studiedCount,dueCount:summary.today.dueCount,aiTurns:summary.today.aiTurns,weeklyAccuracy:summary.weeklyAccuracy,weekly,wrongIds:wrongNotes.map(item=>item.word.id),cards:serverWords.map(word=>toWord(word,progress.get(word.id)?.stage,progress.get(word.id)?.wrongCount)),syncStatus:'online',syncMessage:'서버와 동기화됨'}));await get().flushPending()}catch(error){set({syncStatus:'offline',syncMessage:error instanceof Error?`오프라인 · ${error.message}`:'서버에 연결할 수 없어요'})}},
- setSettings:p=>{set(s=>({settings:{...s.settings,...p}}));if(isApiConfigured)void api.updateSettings(toServer(p)).then(value=>set(s=>({settings:toSettings(value,s.settings.voiceName),syncStatus:'online',syncMessage:'설정을 저장했어요'}))).catch(()=>set({syncStatus:'offline',syncMessage:'설정은 기기에 임시 저장됐어요'}))},
- setTest:a=>set({testAnswers:a}),
- startStudy:async(kind='daily',wordIds)=>{if(!isApiConfigured)return;try{const [session,serverWords]=await Promise.all([api.startStudy(kind,wordIds),api.words()]);const byId=new Map(serverWords.map(word=>[word.id,word]));const cards=session.quizQueue.flatMap(quiz=>{const word=byId.get(quiz.wordId);return word?[toWord(word,quiz.stage)]:[]});set({sessionId:session.sessionId,lastResult:null,quizQueue:session.quizQueue,newWords:session.newWords.map(word=>toWord(word)),cards:cards.length?cards:words,syncStatus:'online',syncMessage:'학습 세션을 시작했어요'})}catch(error){set({syncStatus:'offline',syncMessage:error instanceof Error?`오프라인 학습 · ${error.message}`:'학습 세션을 시작하지 못했어요'})}},
- answer:async(id,ok,hintUsed=false)=>{set(s=>({studied:s.studied+1,wrongIds:ok?s.wrongIds.filter(x=>x!==id):Array.from(new Set([...s.wrongIds,id]))}));const sessionId=get().sessionId;if(!sessionId||!isApiConfigured)return;const quiz=get().quizQueue.find(item=>item.wordId===id);const payload:StudyAnswer={sessionId,wordId:id,quizType:quiz?.type||'A',isCorrect:ok,hintUsed};try{await api.answer(payload)}catch(error){if(error instanceof ApiError&&error.status===400&&error.message.includes('ANSWER_ALREADY_SUBMITTED'))return;if(error instanceof ApiError&&error.status>=400&&error.status<500){set({syncStatus:'offline',syncMessage:`답안 저장 오류 · ${error.message}`});return}set(s=>({pendingAnswers:[...s.pendingAnswers,payload],syncStatus:'offline',syncMessage:'답안을 기기에 보관했어요. 연결되면 전송해요.'}))}},
- finishStudy:async()=>{const id=get().sessionId;if(!id||!isApiConfigured)return;try{await get().flushPending();if(get().pendingAnswers.length)throw new Error('전송 대기 답안이 남아 있어요.');const result=await api.finishStudy(id);set({sessionId:null,lastResult:result,syncStatus:'online',syncMessage:'학습 결과를 저장했어요'})}catch{set({syncStatus:'offline',syncMessage:'학습 결과는 연결되면 저장돼요'})}},
- flushPending:async()=>{const queue=[...get().pendingAnswers];for(const item of queue){try{await api.answer(item);set(s=>({pendingAnswers:s.pendingAnswers.filter(answer=>answer!==item)}))}catch(error){if(error instanceof ApiError&&error.status===400&&error.message.includes('ANSWER_ALREADY_SUBMITTED')){set(s=>({pendingAnswers:s.pendingAnswers.filter(answer=>answer!==item)}));continue}return}}},
- reset:()=>set({settings:initial,streak:0,studied:0,dueCount:0,aiTurns:0,weeklyAccuracy:0,weekly:[],cards:words,testAnswers:[],wrongIds:[],sessionId:null,quizQueue:[],newWords:[],lastResult:null,pendingAnswers:[]})
-}),{name:'lingo-loop-v4',partialize:s=>({settings:s.settings,pendingAnswers:s.pendingAnswers,sessionId:s.sessionId,quizQueue:s.quizQueue,newWords:s.newWords})}));
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { api, isApiConfigured, ApiError, type ServerSettings, type ServerWord, type StudyAnswer, type StudyQuiz, type StudyResult, type WeeklyStat } from './api';
+import type { Word } from './data';
+import { localWords, localQuiz, localMetrics, localResult, nextProgress, selectNewWords, kstDay, type LocalDaily, type LocalProgress, type LocalSession } from './local-learning';
+
+export type Settings = { level: number; dailyNew: number; reviewCap: number; ttsRate: .8 | 1; voiceName: string; sound: boolean; autoplay: boolean; autoSend: boolean; targetWords: boolean };
+type SyncStatus = 'connecting' | 'online' | 'offline' | 'local';
+type State = {
+  settings: Settings; streak: number; studied: number; dueCount: number; masteredCount: number;
+  aiTurns: number; weeklyAccuracy: number; weekly: WeeklyStat[]; cards: Word[];
+  testAnswers: number[]; wrongIds: string[]; syncStatus: SyncStatus; syncMessage: string;
+  sessionId: string | null; quizQueue: StudyQuiz[]; newWords: Word[]; lastResult: StudyResult | null;
+  pendingAnswers: StudyAnswer[]; localProgress: LocalProgress; localDaily: LocalDaily; localSession: LocalSession | null;
+  bootstrap: () => Promise<void>; setSettings: (p: Partial<Settings>) => void; setTest: (scores: number[]) => void;
+  startStudy: (kind?: 'daily' | 'review', wordIds?: string[]) => Promise<void>;
+  answer: (id: string, ok: boolean, hintUsed?: boolean) => Promise<void>;
+  finishStudy: () => Promise<void>; flushPending: () => Promise<void>; reset: () => void;
+};
+const initial: Settings = { level: 1, dailyNew: 10, reviewCap: 30, ttsRate: .8, voiceName: '', sound: true, autoplay: true, autoSend: true, targetWords: true };
+const toSettings = (value: ServerSettings, voiceName = ''): Settings => ({ level: value.userLevel || 1, dailyNew: value.dailyNewCount, reviewCap: value.reviewCap, ttsRate: value.ttsRate, voiceName, sound: value.soundOn, autoplay: value.ttsAutoplay, autoSend: value.speakAutoSend, targetWords: value.useTargetWords });
+const toServer = (value: Partial<Settings>): Partial<ServerSettings> => {
+  const result: Partial<ServerSettings> = {};
+  if (value.level !== undefined) result.userLevel = value.level;
+  if (value.dailyNew !== undefined) result.dailyNewCount = value.dailyNew;
+  if (value.reviewCap !== undefined) result.reviewCap = value.reviewCap;
+  if (value.ttsRate !== undefined) result.ttsRate = value.ttsRate;
+  if (value.sound !== undefined) result.soundOn = value.sound;
+  if (value.autoplay !== undefined) result.ttsAutoplay = value.autoplay;
+  if (value.autoSend !== undefined) result.speakAutoSend = value.autoSend;
+  if (value.targetWords !== undefined) result.useTargetWords = value.targetWords;
+  return result;
+};
+const toWord = (word: ServerWord, stage = 0, wrong = 0): Word => ({ id: word.id, word: word.word, meaning: word.meaningKo, pos: word.pos, example: word.exampleEn, translation: word.exampleKo, level: word.level, stage, wrong, spokenExampleEn: word.spokenExampleEn, writtenExampleEn: word.writtenExampleEn, usageNoteKo: word.usageNoteKo });
+const localCards = (progress: LocalProgress) => localWords.map(word => ({ ...word, stage: progress[word.id]?.stage ?? 0, wrong: progress[word.id]?.wrongCount ?? 0 }));
+const localView = (progress: LocalProgress, daily: LocalDaily) => ({ ...localMetrics(progress, daily), cards: localCards(progress), aiTurns: 0 });
+
+export const useApp = create<State>()(persist((set, get) => ({
+  settings: initial, streak: 0, studied: 0, dueCount: 0, masteredCount: 0, aiTurns: 0,
+  weeklyAccuracy: 0, weekly: [], cards: localWords, testAnswers: [], wrongIds: [],
+  syncStatus: isApiConfigured ? 'connecting' : 'local',
+  syncMessage: isApiConfigured ? '서버에 연결하는 중이에요' : '이 기기에 학습 기록을 저장해요 · 서버 동기화는 꺼져 있어요',
+  sessionId: null, quizQueue: [], newWords: [], lastResult: null, pendingAnswers: [],
+  localProgress: {}, localDaily: {}, localSession: null,
+
+  bootstrap: async () => {
+    const { localProgress, localDaily } = get();
+    set(localView(localProgress, localDaily));
+    if (!isApiConfigured) return;
+    set({ syncStatus: 'connecting', syncMessage: '학습 데이터를 불러오는 중이에요' });
+    try {
+      const [settings, summary, wrongNotes, serverWords, weekly] = await Promise.all([api.settings(), api.summary(), api.wrongNotes(), api.words(), api.weekly()]);
+      const progress = new Map(wrongNotes.map(item => [item.word.id, item.progress]));
+      set(state => ({
+        settings: toSettings(settings, state.settings.voiceName), streak: summary.streak,
+        studied: summary.today.studiedCount, dueCount: summary.today.dueCount,
+        masteredCount: summary.masteredCount, aiTurns: summary.today.aiTurns,
+        weeklyAccuracy: summary.weeklyAccuracy, weekly, wrongIds: wrongNotes.map(item => item.word.id),
+        cards: serverWords.map(word => toWord(word, progress.get(word.id)?.stage, progress.get(word.id)?.wrongCount)),
+        syncStatus: 'online', syncMessage: '서버와 동기화됨',
+      }));
+      await get().flushPending();
+    } catch (error) {
+      set({ ...localView(get().localProgress, get().localDaily), syncStatus: 'offline',
+        syncMessage: error instanceof Error ? `서버 연결 실패 · 이 기기에만 저장 중 (${error.message})` : '서버 연결 실패 · 이 기기에만 저장 중' });
+    }
+  },
+
+  setSettings: value => {
+    set(state => ({ settings: { ...state.settings, ...value } }));
+    if (isApiConfigured && get().syncStatus === 'online') {
+      void api.updateSettings(toServer(value)).then(server => set(state => ({ settings: toSettings(server, state.settings.voiceName) })))
+        .catch(() => set({ syncStatus: 'offline', syncMessage: '설정은 이 기기에 저장했어요. 서버 연결을 확인해 주세요.' }));
+    }
+  },
+  setTest: scores => set({ testAnswers: scores }),
+
+  startStudy: async (kind = 'daily', wordIds) => {
+    if (isApiConfigured && get().syncStatus === 'online') {
+      try {
+        const [session, serverWords] = await Promise.all([api.startStudy(kind, wordIds), api.words()]);
+        const cards = serverWords.map(word => toWord(word));
+        set({ sessionId: session.sessionId, localSession: null, lastResult: null,
+          quizQueue: session.quizQueue, newWords: session.newWords.map(word => toWord(word)),
+          cards: cards.length ? cards : get().cards, syncStatus: 'online', syncMessage: '학습 세션을 시작했어요' });
+        return;
+      } catch (error) {
+        set({ syncStatus: 'offline', syncMessage: error instanceof Error ? `서버 연결 실패 · 이 기기에만 저장 중 (${error.message})` : '서버 연결 실패 · 이 기기에만 저장 중' });
+      }
+    }
+    const state = get(), progress = state.localProgress, today = kstDay();
+    const due = localWords.filter(word => progress[word.id]?.nextReviewAt <= today)
+      .sort((a, b) => progress[a.id].nextReviewAt.localeCompare(progress[b.id].nextReviewAt))
+      .slice(0, state.settings.reviewCap);
+    const selected = wordIds?.length
+      ? localWords.filter(word => wordIds.includes(word.id) && progress[word.id])
+      : due;
+    const newWords = kind === 'daily' && !wordIds?.length
+      ? selectNewWords(progress, state.settings.level, state.settings.dailyNew)
+      : [];
+    const unique = [...new Map([...selected, ...newWords].map(word => [word.id, word])).values()];
+    const id = `local-${crypto.randomUUID()}`;
+    const session: LocalSession = { id, wordIds: unique.map(word => word.id), firstAnswers: {}, attempts: {}, wrongIds: [] };
+    set({ sessionId: id, localSession: session, lastResult: null, quizQueue: unique.map(word => localQuiz(word, progress[word.id]?.stage ?? 0)),
+      newWords, cards: localCards(progress), syncStatus: isApiConfigured ? 'offline' : 'local',
+      syncMessage: isApiConfigured ? '이 학습은 기기에만 저장돼요 · 서버와 자동 병합되지 않아요' : '이 기기에 학습 기록을 저장해요 · 서버 동기화는 꺼져 있어요' });
+  },
+
+  answer: async (id, ok, hintUsed = false) => {
+    const current = get();
+    const session = current.localSession;
+    if (session && current.sessionId === session.id) {
+      const attempts = session.attempts[id] ?? 0;
+      if (attempts >= 2 || (attempts === 1 && session.firstAnswers[id])) return;
+      const nextSession: LocalSession = { ...session, attempts: { ...session.attempts, [id]: attempts + 1 } };
+      if (attempts === 0) {
+        nextSession.firstAnswers = { ...session.firstAnswers, [id]: ok };
+        if (!ok) nextSession.wrongIds = [...session.wrongIds, id];
+        const progress = { ...current.localProgress, [id]: nextProgress(current.localProgress[id], ok, hintUsed) };
+        set({ localSession: nextSession, localProgress: progress, ...localView(progress, current.localDaily) });
+      } else set({ localSession: nextSession });
+      return;
+    }
+    if (!current.sessionId || !isApiConfigured) return;
+    const quiz = current.quizQueue.find(item => item.wordId === id);
+    const payload: StudyAnswer = { sessionId: current.sessionId, wordId: id, quizType: quiz?.type || 'A', isCorrect: ok, hintUsed };
+    try { await api.answer(payload); }
+    catch (error) {
+      if (error instanceof ApiError && error.status === 400 && error.message.includes('ANSWER_ALREADY_SUBMITTED')) return;
+      if (error instanceof ApiError && error.status >= 400 && error.status < 500) {
+        set({ syncStatus: 'offline', syncMessage: `답안 저장 오류 · ${error.message}` }); return;
+      }
+      set(state => ({ pendingAnswers: [...state.pendingAnswers, payload], syncStatus: 'offline', syncMessage: '답안을 기기에 보관했어요. 연결되면 전송해요.' }));
+    }
+  },
+
+  finishStudy: async () => {
+    const current = get(), id = current.sessionId;
+    if (!id) return;
+    if (current.localSession?.id === id) {
+      const result = localResult(current.localSession), today = kstDay();
+      const previous = current.localDaily[today] ?? { studiedCount: 0, correctCount: 0, sessionCount: 0 };
+      const daily = { ...current.localDaily, [today]: {
+        studiedCount: previous.studiedCount + result.totalCount,
+        correctCount: previous.correctCount + result.correctCount,
+        sessionCount: previous.sessionCount + Number(result.totalCount > 0),
+      } };
+      set({ ...localView(current.localProgress, daily), localDaily: daily, localSession: null,
+        sessionId: null, lastResult: result });
+      return;
+    }
+    if (!isApiConfigured) return;
+    try {
+      await get().flushPending();
+      if (get().pendingAnswers.length) throw new Error('전송 대기 답안이 남아 있어요.');
+      const result = await api.finishStudy(id);
+      set({ sessionId: null, lastResult: result, syncStatus: 'online', syncMessage: '학습 결과를 저장했어요' });
+      await get().bootstrap();
+    } catch {
+      set({ syncStatus: 'offline', syncMessage: '학습 결과는 연결되면 저장돼요' });
+    }
+  },
+
+  flushPending: async () => {
+    const queue = [...get().pendingAnswers];
+    for (const item of queue) {
+      try { await api.answer(item); set(state => ({ pendingAnswers: state.pendingAnswers.filter(answer => answer !== item) })); }
+      catch (error) {
+        if (error instanceof ApiError && error.status === 400 && error.message.includes('ANSWER_ALREADY_SUBMITTED')) {
+          set(state => ({ pendingAnswers: state.pendingAnswers.filter(answer => answer !== item) })); continue;
+        }
+        return;
+      }
+    }
+  },
+  reset: () => set({ settings: initial, streak: 0, studied: 0, dueCount: 0, masteredCount: 0, aiTurns: 0,
+    weeklyAccuracy: 0, weekly: [], cards: localWords, testAnswers: [], wrongIds: [], sessionId: null,
+    quizQueue: [], newWords: [], lastResult: null, pendingAnswers: [], localProgress: {}, localDaily: {}, localSession: null }),
+}), { name: 'lingo-loop-v5', partialize: state => ({ settings: state.settings, pendingAnswers: state.pendingAnswers,
+  sessionId: state.sessionId, quizQueue: state.quizQueue, newWords: state.newWords,
+  localProgress: state.localProgress, localDaily: state.localDaily, localSession: state.localSession,
+  testAnswers: state.testAnswers }) }));

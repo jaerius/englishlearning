@@ -1,6 +1,6 @@
 # Mac mini 운영 배포
 
-현재 제품은 Vercel의 정적 PWA와 Mac mini의 개인 API로 나뉜다. iPhone은 Tailscale에 연결한 뒤 Vercel 앱을 열고, 브라우저가 tailnet 안의 API를 HTTPS로 호출한다. API 키와 학습 데이터는 Mac mini 밖으로 배포하지 않는다.
+현재 제품은 Vercel의 정적 PWA와 Mac mini의 개인 API로 나뉜다. Mac mini의 API를 iPhone에서 언제든 쓰려면 Mac mini가 켜져 있고 Docker 컨테이너와 Tailscale이 계속 실행 중이어야 한다. iPhone은 Tailscale에 연결한 뒤 Vercel 앱을 열고, 브라우저가 tailnet 안의 API를 HTTPS로 호출한다. API 키는 Mac mini 밖으로 배포하지 않는다. 서버가 꺼져 있어도 단어 학습은 iPhone에 로컬 저장되지만 서버와 자동 병합되지는 않는다.
 
 ## 1. 현재 저장소의 한계
 
@@ -44,6 +44,8 @@ Vercel 프로젝트의 Production 환경변수에 아래 한 개를 설정하고
 ```text
 VITE_API_BASE_URL=https://<mac-name>.<tailnet>.ts.net
 ```
+
+또는 앱의 **설정 → 학습 서버**에 같은 HTTPS 주소를 입력하고 **연결 확인 → 주소 저장**을 누른다. 이 방법은 Vercel 재배포 없이 해당 iPhone에만 서버 주소를 저장한다. 서버가 꺼져 있거나 iPhone에서 Tailscale을 끄면 연결할 수 없다. 로컬 학습 기록은 서버에 자동 병합되지 않는다. 서버 연결 전에는 **설정 → 이 기기 학습 기록 백업**에서 JSON 파일을 저장해 iPhone 파일 앱에 보관할 수 있다.
 
 Mac mini의 `deploy/.env`에는 다음처럼 정확한 브라우저 origin을 둔다.
 

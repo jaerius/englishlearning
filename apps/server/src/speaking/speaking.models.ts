@@ -2,7 +2,7 @@ export type SpeakingScenario = {
   id: string;
   title: string;
   description: string;
-  level: 1 | 2 | 3 | 4 | 5;
+  level: 1 | 2 | 3 | 4 | 5 | 6;
   role: string;
   situation: string;
   isCustom: boolean;
@@ -22,6 +22,7 @@ export type SpeakingSummary = {
   corrections: Correction[];
   expressions: Array<{ phrase: string; meaningKo: string }>;
   targetWords: Array<{ id: string; word: string; used: boolean }>;
+  coaching?: { strengthKo: string; focusKo: string; nextPracticeKo: string };
 };
 export type SpeakingSession = {
   id: string;
