@@ -3,8 +3,9 @@ import { persist } from 'zustand/middleware';
 import { api, isApiConfigured, ApiError, type ServerSettings, type ServerWord, type StudyAnswer, type StudyQuiz, type StudyResult, type WeeklyStat } from './api';
 import type { Word } from './data';
 import { localWords, localQuiz, localMetrics, localResult, nextProgress, selectNewWords, kstDay, type LocalDaily, type LocalProgress, type LocalSession } from './local-learning';
+import { defaultLearningSettings, normalizeSettings, type LearningSettings } from './settings-normalize';
 
-export type Settings = { level: number; dailyNew: number; reviewCap: number; ttsRate: .8 | 1; voiceName: string; sound: boolean; autoplay: boolean; autoSend: boolean; targetWords: boolean };
+export type Settings = LearningSettings;
 type SyncStatus = 'connecting' | 'online' | 'offline' | 'local';
 type State = {
   settings: Settings; streak: number; studied: number; dueCount: number; masteredCount: number;
@@ -17,8 +18,8 @@ type State = {
   answer: (id: string, ok: boolean, hintUsed?: boolean) => Promise<void>;
   finishStudy: () => Promise<void>; flushPending: () => Promise<void>; reset: () => void;
 };
-const initial: Settings = { level: 1, dailyNew: 10, reviewCap: 30, ttsRate: .8, voiceName: '', sound: true, autoplay: true, autoSend: true, targetWords: true };
-const toSettings = (value: ServerSettings, voiceName = ''): Settings => ({ level: value.userLevel || 1, dailyNew: value.dailyNewCount, reviewCap: value.reviewCap, ttsRate: value.ttsRate, voiceName, sound: value.soundOn, autoplay: value.ttsAutoplay, autoSend: value.speakAutoSend, targetWords: value.useTargetWords });
+const initial = defaultLearningSettings;
+const toSettings = (value: ServerSettings, voiceName = ''): Settings => normalizeSettings({ level: value.userLevel, dailyNew: value.dailyNewCount, reviewCap: value.reviewCap, ttsRate: value.ttsRate, voiceName, sound: value.soundOn, autoplay: value.ttsAutoplay, autoSend: value.speakAutoSend, targetWords: value.useTargetWords });
 const toServer = (value: Partial<Settings>): Partial<ServerSettings> => {
   const result: Partial<ServerSettings> = {};
   if (value.level !== undefined) result.userLevel = value.level;
@@ -176,7 +177,10 @@ export const useApp = create<State>()(persist((set, get) => ({
   reset: () => set({ settings: initial, streak: 0, studied: 0, dueCount: 0, masteredCount: 0, aiTurns: 0,
     weeklyAccuracy: 0, weekly: [], cards: localWords, testAnswers: [], wrongIds: [], sessionId: null,
     quizQueue: [], newWords: [], lastResult: null, pendingAnswers: [], localProgress: {}, localDaily: {}, localSession: null }),
-}), { name: 'lingo-loop-v5', partialize: state => ({ settings: state.settings, pendingAnswers: state.pendingAnswers,
+}), { name: 'lingo-loop-v5', merge: (persisted, current) => {
+  const saved = persisted && typeof persisted === 'object' ? persisted as Partial<State> : {};
+  return { ...current, ...saved, settings: normalizeSettings(saved.settings) };
+}, partialize: state => ({ settings: state.settings, pendingAnswers: state.pendingAnswers,
   sessionId: state.sessionId, quizQueue: state.quizQueue, newWords: state.newWords,
   localProgress: state.localProgress, localDaily: state.localDaily, localSession: state.localSession,
   testAnswers: state.testAnswers }) }));
