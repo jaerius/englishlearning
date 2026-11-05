@@ -12,27 +12,54 @@ fi
 printf 'macOS: %s\n' "$(sw_vers -productVersion)"
 printf 'Mac: %s\n' "$(sysctl -n hw.model 2>/dev/null || printf '모델 확인 불가')"
 
-if command -v docker >/dev/null 2>&1; then
-  if docker info >/dev/null 2>&1; then
+docker_cli="$(command -v docker 2>/dev/null || true)"
+if [ -z "$docker_cli" ]; then
+  for candidate in "$HOME/.docker/bin/docker" /Applications/Docker.app/Contents/Resources/bin/docker /usr/local/bin/docker /opt/homebrew/bin/docker; do
+    if [ -x "$candidate" ]; then docker_cli="$candidate"; break; fi
+  done
+fi
+if [ -n "$docker_cli" ]; then
+  if "$docker_cli" info >/dev/null 2>&1; then
     printf '%s\n' 'Docker: 실행 중'
   else
-    printf '%s\n' 'Docker: 설치됐지만 엔진이 실행되지 않습니다. Docker Desktop을 여세요.'
+    printf '%s\n' 'Docker: CLI는 있지만 엔진이 실행되지 않습니다. Docker Desktop을 열고 초록색 Engine running 표시를 기다리세요.'
+  fi
+  if ! command -v docker >/dev/null 2>&1; then
+    printf 'Docker CLI 경로: %s (터미널 PATH에 추가 필요)\n' "$docker_cli"
+    printf '현재 터미널에서 실행: export PATH="%s:$PATH"\n' "$(dirname "$docker_cli")"
   fi
 else
-  printf '%s\n' 'Docker: 설치되지 않았거나 터미널 경로에 없습니다.'
+  if [ -d /Applications/Docker.app ]; then
+    printf '%s\n' 'Docker Desktop 앱은 있으나 CLI를 찾지 못했습니다. 앱을 한 번 실행하고 Settings > Advanced > Docker CLI tools 설치 위치를 확인하세요.'
+  else
+    printf '%s\n' 'Docker: /Applications/Docker.app과 일반 CLI 경로에서 찾지 못했습니다.'
+  fi
 fi
 
-if command -v tailscale >/dev/null 2>&1; then
-  if tailscale status >/dev/null 2>&1; then
+tailscale_cli="$(command -v tailscale 2>/dev/null || true)"
+if [ -z "$tailscale_cli" ]; then
+  for candidate in /Applications/Tailscale.app/Contents/MacOS/Tailscale /usr/local/bin/tailscale /opt/homebrew/bin/tailscale; do
+    if [ -x "$candidate" ]; then tailscale_cli="$candidate"; break; fi
+  done
+fi
+if [ -n "$tailscale_cli" ]; then
+  if "$tailscale_cli" status >/dev/null 2>&1; then
     printf '%s\n' 'Tailscale: 로그인·연결 확인됨'
-    if tailscale serve status >/dev/null 2>&1; then
+    if "$tailscale_cli" serve status >/dev/null 2>&1; then
       printf '%s\n' 'Tailscale Serve: 상태 명령 사용 가능'
     fi
   else
     printf '%s\n' 'Tailscale: 설치됐지만 연결되지 않았습니다. 앱에서 같은 계정으로 로그인하세요.'
   fi
+  if ! command -v tailscale >/dev/null 2>&1; then
+    printf 'Tailscale CLI 경로: %s (터미널 PATH에 추가하거나 전체 경로로 실행하세요)\n' "$tailscale_cli"
+  fi
 else
-  printf '%s\n' 'Tailscale: CLI를 찾지 못했습니다. 공식 macOS 앱 설치와 로그인을 확인하세요.'
+  if [ -d /Applications/Tailscale.app ]; then
+    printf '%s\n' 'Tailscale 앱은 있으나 CLI를 찾지 못했습니다. 앱 설정의 CLI 설치 메뉴를 확인하세요.'
+  else
+    printf '%s\n' 'Tailscale: /Applications/Tailscale.app과 일반 CLI 경로에서 찾지 못했습니다.'
+  fi
 fi
 
 if [ -f deploy/.env ]; then
