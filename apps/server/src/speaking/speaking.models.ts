@@ -23,6 +23,14 @@ export type SpeakingSummary = {
   expressions: Array<{ phrase: string; meaningKo: string }>;
   targetWords: Array<{ id: string; word: string; used: boolean }>;
   coaching?: { strengthKo: string; focusKo: string; nextPracticeKo: string };
+  languageInsights?: Array<{
+    original: string;
+    naturalAlternative: string;
+    spoken: string;
+    written: string;
+    synonyms: Array<{ expression: string; nuanceKo: string }>;
+    explanationKo: string;
+  }>;
 };
 export type SpeakingSession = {
   id: string;

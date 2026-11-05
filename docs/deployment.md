@@ -15,7 +15,7 @@ cp .env.example deploy/.env
 chmod 600 deploy/.env
 ```
 
-`deploy/.env`의 `CORS_ORIGIN`을 실제 Vercel 프로덕션 주소로 맞춘다. 실제 말하기를 켜려면 Mac mini의 `deploy/.env`에 `SPEAKING_PROVIDER=live`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`를 설정한다. 키가 없으면 말하기 요청은 503으로 종료된다. `SPEAKING_PROVIDER=mock`은 개발 검증에만 사용한다. 키를 Vercel 환경변수나 `VITE_` 변수에 넣으면 안 된다.
+`deploy/.env`의 `CORS_ORIGIN`을 실제 Vercel 프로덕션 주소로 맞춘다. 실제 말하기는 `SPEAKING_PROVIDER=live`와 `OPENAI_API_KEY`만 있으면 음성 인식과 대화가 모두 동작한다. `ANTHROPIC_API_KEY`가 있으면 `AI_CHAT_PROVIDER=auto`에서 Anthropic 대화를 우선 사용한다. OpenAI만 쓰려면 `AI_CHAT_PROVIDER=openai`로 고정한다. 키가 없으면 말하기 요청은 503으로 종료된다. `SPEAKING_PROVIDER=mock`은 개발 검증에만 사용한다. 키를 Vercel 환경변수나 `VITE_` 변수에 넣으면 안 된다.
 
 ```bash
 docker compose -f deploy/compose.yaml --env-file deploy/.env build
@@ -83,7 +83,7 @@ curl --fail http://127.0.0.1:3001/api/health
 6. 화면을 잠갔다가 돌아오고, 네트워크를 끊었다 켠 뒤 중복 답안이나 데이터 유실이 없는지 확인한다.
 7. 40번째 AI 턴은 성공하고 41번째는 서버의 429 응답으로 차단되는지 확인한다.
 
-브라우저 TTS는 기기에 설치된 음성을 사용하므로 서버 비용은 들지 않는다. OpenAI STT와 Anthropic 대화 어댑터가 연결되어 있다. 서버는 일일 40턴, 기본 월 600턴/음성 인식 요청, 월 예상 비용 4,500원 한도를 강제한다. `.env`의 모델 단가와 환율을 실제 공급자 요금에 맞춰 유지한다. 설정 화면의 값은 추정치이므로 실제 청구액과 대조해 월 KRW 5,000 이하인지 확인해야 한다.
+브라우저 TTS는 기기에 설치된 음성을 사용하므로 서버 비용은 들지 않는다. OpenAI STT와 OpenAI/Anthropic 대화 어댑터가 연결되어 있다. 서버는 일일 40턴, 기본 월 600턴/음성 인식 요청, 월 예상 비용 4,500원 한도를 강제한다. `.env`의 모델 단가와 환율을 실제 공급자 요금에 맞춰 유지한다. 설정 화면의 값은 추정치이므로 실제 청구액과 대조해 월 KRW 5,000 이하인지 확인해야 한다.
 
 ## 7. 운영 점검
 
