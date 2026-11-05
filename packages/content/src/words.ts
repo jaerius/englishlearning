@@ -1,5 +1,7 @@
 import type { Cefr, Level, PartOfSpeech, WordSeed } from "./types.js";
 import { BUSINESS_CORE_WORDS } from "./business-core.js";
+import { MEETINGS_EMAIL_WORDS } from "./packs/meetings-email.js";
+import { NEGOTIATION_CUSTOMER_WORDS } from "./packs/negotiation-customer.js";
 
 const cefrByLevel: Record<Level, Cefr> = { 1: "A1", 2: "A2", 3: "B1", 4: "B2", 5: "C1", 6: "C2" };
 const seed = (id: string, word: string, pos: PartOfSpeech, level: Level, meaningKo: string, exampleEn: string, exampleKo: string): WordSeed => ({ id, word, pos, level, cefr: cefrByLevel[level], meaningKo, exampleEn, exampleKo, hasExample: true, isPhrase: pos === "phrase" });
@@ -145,6 +147,8 @@ export const BASE_WORD_SEEDS: readonly WordSeed[] = [
 export const CONTENT_PACKS: readonly { id: string; version: number; words: readonly WordSeed[] }[] = [
   { id: "foundation", version: 1, words: BASE_WORD_SEEDS },
   { id: "business-core", version: 1, words: BUSINESS_CORE_WORDS },
+  { id: "meetings-email", version: 1, words: MEETINGS_EMAIL_WORDS },
+  { id: "negotiation-customer", version: 1, words: NEGOTIATION_CUSTOMER_WORDS },
 ];
 
 export const WORD_SEEDS: readonly WordSeed[] = CONTENT_PACKS.flatMap(pack => pack.words);

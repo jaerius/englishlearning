@@ -13,12 +13,12 @@ const deterministicRandom = () => {
 test("all original seed words satisfy content policy", () => {
   assert.equal(BASE_WORD_SEEDS.length, 126);
   assert.equal(CONTENT_PACKS[1].words.length, 59);
-  assert.equal(WORD_SEEDS.length, 185);
+  assert.equal(WORD_SEEDS.length, 300);
   assert.equal(WORD_SEEDS.length, CONTENT_PACKS.reduce((sum, pack) => sum + pack.words.length, 0));
-  assert.deepEqual(CONTENT_PACKS.map(pack => [pack.id, pack.version]), [["foundation", 1], ["business-core", 1]]);
+  assert.deepEqual(CONTENT_PACKS.map(pack => [pack.id, pack.version]), [["foundation", 1], ["business-core", 1], ["meetings-email", 1], ["negotiation-customer", 1]]);
   assert.deepEqual(validateWords(WORD_SEEDS), []);
   assert.ok(WORD_SEEDS.filter(word => word.cefr === "C2").length >= 18);
-  assert.equal(WORD_SEEDS.filter(word => word.spokenExampleEn && word.writtenExampleEn).length, 113);
+  assert.equal(WORD_SEEDS.filter(word => word.spokenExampleEn && word.writtenExampleEn).length, 228);
   assert.equal(CONTENT_PACKS[1].words.filter(word => word.synonyms?.length).length, 12);
 });
 

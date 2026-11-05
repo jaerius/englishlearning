@@ -50,14 +50,16 @@ export const useApp = create<State>()(persist((set, get) => ({
     if (!isApiConfigured) return;
     set({ syncStatus: 'connecting', syncMessage: '학습 데이터를 불러오는 중이에요' });
     try {
-      const [settings, summary, wrongNotes, serverWords, weekly] = await Promise.all([api.settings(), api.summary(), api.wrongNotes(), api.words(), api.weekly()]);
+      const [settings, summary, wrongNotes, weekly] = await Promise.all([api.settings(), api.summary(), api.wrongNotes(), api.weekly()]);
       const progress = new Map(wrongNotes.map(item => [item.word.id, item.progress]));
+      const cards = [...new Map([...localWords, ...wrongNotes.map(item => toWord(item.word))].map(word => [word.id, word])).values()]
+        .map(word => ({ ...word, stage: progress.get(word.id)?.stage ?? word.stage, wrong: progress.get(word.id)?.wrongCount ?? word.wrong }));
       set(state => ({
         settings: toSettings(settings, state.settings.voiceName), streak: summary.streak,
         studied: summary.today.studiedCount, dueCount: summary.today.dueCount,
         masteredCount: summary.masteredCount, aiTurns: summary.today.aiTurns,
         weeklyAccuracy: summary.weeklyAccuracy, weekly, wrongIds: wrongNotes.map(item => item.word.id),
-        cards: serverWords.map(word => toWord(word, progress.get(word.id)?.stage, progress.get(word.id)?.wrongCount)),
+        cards,
         syncStatus: 'online', syncMessage: '서버와 동기화됨',
       }));
       await get().flushPending();
@@ -81,7 +83,10 @@ export const useApp = create<State>()(persist((set, get) => ({
       try {
         const session = await api.startStudy(kind, wordIds);
         const newWords = session.newWords.map(word => toWord(word));
-        const cards = [...new Map([...get().cards, ...newWords].map(word => [word.id, word])).values()];
+        const known = new Set([...get().cards, ...newWords].map(word => word.id));
+        const missingIds = [...new Set(session.quizQueue.map(item => item.wordId))].filter(id => !known.has(id));
+        const missingWords = (await Promise.all(missingIds.map(id => api.word(id).catch(() => null)))).filter((word): word is NonNullable<typeof word> => word !== null);
+        const cards = [...new Map([...get().cards, ...newWords, ...missingWords.map(word => toWord(word, word.progress?.stage, word.progress?.wrongCount))].map(word => [word.id, word])).values()];
         set({ sessionId: session.sessionId, localSession: null, lastResult: null,
           quizQueue: session.quizQueue, newWords,
           cards: cards.length ? cards : get().cards, syncStatus: 'online', syncMessage: '학습 세션을 시작했어요' });

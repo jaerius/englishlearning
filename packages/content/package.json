@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "tsc -p tsconfig.json && node --test test/content.test.mjs"
+    "test": "tsc -p tsconfig.json && node --test test/*.test.mjs",
+    "check:batch": "npm run build && node scripts/check-batch.mjs"
   }
 }
