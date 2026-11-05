@@ -1,0 +1,7 @@
+# Daily study time
+
+The user can choose one daily time in Korea Standard Time. The preference is saved on the current device. When the app is open or becomes visible after that time, and no words were studied today, the home screen can show a start-study prompt. This is an in-app cue, not a background alarm. The component is `apps/web/src/StudySchedule.tsx`; it exports `StudySchedule` for Settings and `StudyTimeBanner` for Home. The latter receives the real `studiedToday` value and the existing start-study action.
+
+The current PWA has no server push subscription, scheduled push job, or notification permission flow. JavaScript timers stop when Safari or the installed PWA is closed or suspended. Therefore a saved study time **cannot** reliably deliver an iPhone notification while the app is closed. The UI states this plainly and recommends a daily repeating reminder in the built-in iPhone Reminders app. A future background notification requires iPhone Home Screen installation, explicit notification permission, a Web Push subscription, a push service, and operational testing on the target iOS version. The Mac mini must remain reachable if it schedules and sends pushes. No claim is made that a browser tab can schedule device-local notifications.
+
+The schedule setting is local and intentionally separate from the Mac mini account until a cross-device sync policy exists. It contains no secret or provider credential.

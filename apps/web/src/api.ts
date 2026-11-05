@@ -12,7 +12,7 @@ export type StudyAnswer={sessionId:string;wordId:string;quizType:'A'|'B'|'C'|'S'
 export type LevelQuestion={wordId:string;level:number;word:string;pos:string;options:string[]};
 export type SpeakingScenario={id:string;title:string;description:string;level:number;role:string;situation:string;isCustom:boolean};
 export type SpeakingSession={id:string;scenarioId:string;cefr:string;targetWords:Array<{id:string;word:string;meaningKo:string}>;messages:Array<{id:string;role:'user'|'ai';text:string}>;usedWordIds:string[];finishedAt:string|null;summary:SpeakingSummary|null};
-export type SpeakingSummary={corrections:Array<{original:string;corrected:string;explanationKo:string}>;expressions:Array<{phrase:string;meaningKo:string}>;targetWords:Array<{id:string;word:string;used:boolean}>;coaching?:{strengthKo:string;focusKo:string;nextPracticeKo:string}};
+export type SpeakingSummary={corrections:Array<{original:string;corrected:string;explanationKo:string}>;expressions:Array<{phrase:string;meaningKo:string}>;targetWords:Array<{id:string;word:string;used:boolean}>;coaching?:{strengthKo:string;focusKo:string;nextPracticeKo:string};languageInsights?:Array<{original:string;naturalAlternative:string;spoken:string;written:string;explanationKo:string;synonyms:Array<{expression:string;nuanceKo:string}>}>};
 export type SavedPhrase={id:string;phrase:string;meaningKo:string;savedAt:string};
 const configuredBase=(import.meta.env.VITE_API_BASE_URL as string|undefined)?.replace(/\/$/,'');
 const savedBase=typeof window!=='undefined'?window.localStorage.getItem('lingo-loop-api-url')?.replace(/\/$/,''):undefined;
