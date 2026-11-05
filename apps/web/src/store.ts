@@ -32,7 +32,7 @@ const toServer = (value: Partial<Settings>): Partial<ServerSettings> => {
   if (value.targetWords !== undefined) result.useTargetWords = value.targetWords;
   return result;
 };
-const toWord = (word: ServerWord, stage = 0, wrong = 0): Word => ({ id: word.id, word: word.word, meaning: word.meaningKo, pos: word.pos, example: word.exampleEn, translation: word.exampleKo, level: word.level, stage, wrong, spokenExampleEn: word.spokenExampleEn, writtenExampleEn: word.writtenExampleEn, usageNoteKo: word.usageNoteKo });
+const toWord = (word: ServerWord, stage = 0, wrong = 0): Word => ({ id: word.id, word: word.word, meaning: word.meaningKo, pos: word.pos, example: word.exampleEn, translation: word.exampleKo, level: word.level, stage, wrong, spokenExampleEn: word.spokenExampleEn, writtenExampleEn: word.writtenExampleEn, usageNoteKo: word.usageNoteKo, domain: word.domain, synonyms: word.synonyms, etymology: word.etymology });
 const localCards = (progress: LocalProgress) => localWords.map(word => ({ ...word, stage: progress[word.id]?.stage ?? 0, wrong: progress[word.id]?.wrongCount ?? 0 }));
 const localView = (progress: LocalProgress, daily: LocalDaily) => ({ ...localMetrics(progress, daily), cards: localCards(progress), aiTurns: 0 });
 
@@ -79,10 +79,11 @@ export const useApp = create<State>()(persist((set, get) => ({
   startStudy: async (kind = 'daily', wordIds) => {
     if (isApiConfigured && get().syncStatus === 'online') {
       try {
-        const [session, serverWords] = await Promise.all([api.startStudy(kind, wordIds), api.words()]);
-        const cards = serverWords.map(word => toWord(word));
+        const session = await api.startStudy(kind, wordIds);
+        const newWords = session.newWords.map(word => toWord(word));
+        const cards = [...new Map([...get().cards, ...newWords].map(word => [word.id, word])).values()];
         set({ sessionId: session.sessionId, localSession: null, lastResult: null,
-          quizQueue: session.quizQueue, newWords: session.newWords.map(word => toWord(word)),
+          quizQueue: session.quizQueue, newWords,
           cards: cards.length ? cards : get().cards, syncStatus: 'online', syncMessage: '학습 세션을 시작했어요' });
         return;
       } catch (error) {

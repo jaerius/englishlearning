@@ -16,6 +16,9 @@ export interface WordSeed {
   spokenExampleEn?: string;
   writtenExampleEn?: string;
   usageNoteKo?: string;
+  domain?: "general" | "business";
+  synonyms?: Array<{ word: string; nuanceKo: string }>;
+  etymology?: { summaryKo: string; sourceUrl: string };
 }
 
 export interface LevelTestQuestion {

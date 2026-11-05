@@ -10,6 +10,7 @@ export const localWords: Word[] = WORD_SEEDS.map(item => ({
   id: item.id, word: item.word, meaning: item.meaningKo, pos: item.pos,
   example: item.exampleEn, translation: item.exampleKo, level: item.level, stage: 0, wrong: 0,
   spokenExampleEn: item.spokenExampleEn, writtenExampleEn: item.writtenExampleEn, usageNoteKo: item.usageNoteKo,
+  domain: item.domain, synonyms: item.synonyms, etymology: item.etymology,
 }));
 
 export function kstDay(date = new Date()): string {

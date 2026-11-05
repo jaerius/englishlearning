@@ -1,11 +1,12 @@
 import type { Cefr, Level, PartOfSpeech, WordSeed } from "./types.js";
+import { BUSINESS_CORE_WORDS } from "./business-core.js";
 
 const cefrByLevel: Record<Level, Cefr> = { 1: "A1", 2: "A2", 3: "B1", 4: "B2", 5: "C1", 6: "C2" };
 const seed = (id: string, word: string, pos: PartOfSpeech, level: Level, meaningKo: string, exampleEn: string, exampleKo: string): WordSeed => ({ id, word, pos, level, cefr: cefrByLevel[level], meaningKo, exampleEn, exampleKo, hasExample: true, isPhrase: pos === "phrase" });
 const businessSeed = (id: string, word: string, pos: PartOfSpeech, level: Level, meaningKo: string, exampleEn: string, exampleKo: string, spokenExampleEn: string, writtenExampleEn: string, usageNoteKo: string): WordSeed => ({ ...seed(id, word, pos, level, meaningKo, exampleEn, exampleKo), spokenExampleEn, writtenExampleEn, usageNoteKo });
 
 // Original practice content written for this project; it is not copied from a commercial word list.
-export const WORD_SEEDS: readonly WordSeed[] = [
+export const BASE_WORD_SEEDS: readonly WordSeed[] = [
   seed("l1-arrive", "arrive", "verb", 1, "도착하다", "We arrive at the station before eight every morning.", "우리는 매일 아침 여덟 시 전에 역에 도착해요."),
   seed("l1-borrow", "borrow", "verb", 1, "빌리다", "Can I borrow your blue pen for class today?", "오늘 수업에서 네 파란 펜을 빌려도 될까?"),
   seed("l1-choose", "choose", "verb", 1, "고르다", "Please choose one picture for your new profile.", "새 프로필에 쓸 사진 하나를 골라 주세요."),
@@ -140,3 +141,10 @@ export const WORD_SEEDS: readonly WordSeed[] = [
   seed("l6-perfunctory", "perfunctory", "adjective", 6, "형식적으로 대충 하는", "A perfunctory review missed the contract's most serious flaw.", "형식적인 검토가 계약의 가장 심각한 결함을 놓쳤어요."),
   seed("l6-juxtapose", "juxtapose", "verb", 6, "나란히 놓아 대비하다", "The report will juxtapose customer feedback with financial outcomes.", "보고서는 고객 피드백과 재무 결과를 나란히 놓아 대비할 거예요."),
 ];
+
+export const CONTENT_PACKS: readonly { id: string; version: number; words: readonly WordSeed[] }[] = [
+  { id: "foundation", version: 1, words: BASE_WORD_SEEDS },
+  { id: "business-core", version: 1, words: BUSINESS_CORE_WORDS },
+];
+
+export const WORD_SEEDS: readonly WordSeed[] = CONTENT_PACKS.flatMap(pack => pack.words);

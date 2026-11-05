@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { calculateLevel, generateLevelTest, validateLevelTest, validateWords, WORD_SEEDS } from "../dist/index.js";
+import { BASE_WORD_SEEDS, CONTENT_PACKS, calculateLevel, generateLevelTest, validateLevelTest, validateWords, WORD_SEEDS } from "../dist/index.js";
 
 const deterministicRandom = () => {
   let state = 123456789;
@@ -11,10 +11,28 @@ const deterministicRandom = () => {
 };
 
 test("all original seed words satisfy content policy", () => {
-  assert.equal(WORD_SEEDS.length, 126);
+  assert.equal(BASE_WORD_SEEDS.length, 126);
+  assert.equal(CONTENT_PACKS[1].words.length, 59);
+  assert.equal(WORD_SEEDS.length, 185);
+  assert.equal(WORD_SEEDS.length, CONTENT_PACKS.reduce((sum, pack) => sum + pack.words.length, 0));
+  assert.deepEqual(CONTENT_PACKS.map(pack => [pack.id, pack.version]), [["foundation", 1], ["business-core", 1]]);
   assert.deepEqual(validateWords(WORD_SEEDS), []);
-  assert.equal(WORD_SEEDS.filter(word => word.cefr === "C2").length, 18);
-  assert.equal(WORD_SEEDS.filter(word => word.spokenExampleEn && word.writtenExampleEn).length, 54);
+  assert.ok(WORD_SEEDS.filter(word => word.cefr === "C2").length >= 18);
+  assert.equal(WORD_SEEDS.filter(word => word.spokenExampleEn && word.writtenExampleEn).length, 113);
+  assert.equal(CONTENT_PACKS[1].words.filter(word => word.synonyms?.length).length, 12);
+});
+
+test("optional enrichment fields require bounded, sourced content", () => {
+  const original = BASE_WORD_SEEDS[0];
+  assert.deepEqual(validateWords(BASE_WORD_SEEDS.map(word => word.id === original.id ? {
+    ...word, domain: "business", synonyms: [{ word: "reach", nuanceKo: "목적지에 이른다는 뜻" }],
+    etymology: { summaryKo: "라틴어에서 유래", sourceUrl: "https://example.org/entry" },
+  } : word)), []);
+  const errors = validateWords(BASE_WORD_SEEDS.map(word => word.id === original.id ? {
+    ...word, synonyms: [{ word: "reach", nuanceKo: "" }], etymology: { summaryKo: "", sourceUrl: "http://example.org" },
+  } : word));
+  assert.ok(errors.some(error => error.includes("synonyms")));
+  assert.ok(errors.some(error => error.includes("etymology")));
 });
 
 test("level test contains four valid questions per level", () => {

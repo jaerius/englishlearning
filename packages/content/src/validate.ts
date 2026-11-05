@@ -25,6 +25,12 @@ export function validateWords(words: readonly WordSeed[]): string[] {
     if (word.spokenExampleEn || word.writtenExampleEn || word.usageNoteKo) {
       if (!word.spokenExampleEn?.trim() || !word.writtenExampleEn?.trim() || !word.usageNoteKo?.trim()) errors.push(`${word.id}: business usage needs spoken, written, and Korean note`);
     }
+    if (word.domain && !["general", "business"].includes(word.domain)) errors.push(`${word.id}: invalid domain`);
+    if (word.synonyms) {
+      if (!Array.isArray(word.synonyms) || word.synonyms.length > 5 || word.synonyms.some(item => !item?.word?.trim() || !item?.nuanceKo?.trim())) errors.push(`${word.id}: synonyms need word and Korean nuance, at most five`);
+      else if (new Set(word.synonyms.map(item => normalized(item.word))).size !== word.synonyms.length) errors.push(`${word.id}: duplicate synonyms`);
+    }
+    if (word.etymology && (!word.etymology.summaryKo?.trim() || !/^https:\/\//.test(word.etymology.sourceUrl ?? ""))) errors.push(`${word.id}: etymology needs Korean summary and HTTPS source URL`);
   }
   for (const level of [1, 2, 3, 4, 5, 6] as const) {
     const count = words.filter((word) => word.level === level).length;

@@ -1,4 +1,4 @@
-export type Word={id:string;word:string;meaning:string;pos:string;example:string;translation:string;level:number;stage:number;wrong:number;spokenExampleEn?:string;writtenExampleEn?:string;usageNoteKo?:string};
+export type Word={id:string;word:string;meaning:string;pos:string;example:string;translation:string;level:number;stage:number;wrong:number;spokenExampleEn?:string;writtenExampleEn?:string;usageNoteKo?:string;domain?:'general'|'business';synonyms?:Array<{word:string;nuanceKo:string}>;etymology?:{summaryKo:string;sourceUrl:string}};
 export const words:Word[]=[
  {id:'1',word:'subtle',meaning:'미묘한, 섬세한',pos:'adjective',example:'There is a subtle difference between the two ideas.',translation:'두 생각에는 미묘한 차이가 있다.',level:3,stage:0,wrong:0},
  {id:'2',word:'consider',meaning:'고려하다',pos:'verb',example:'Please consider every option before you decide.',translation:'결정하기 전에 모든 선택지를 고려하세요.',level:3,stage:0,wrong:0},

@@ -1,0 +1,88 @@
+import type { WordSeed, Level } from './types.js';
+
+const cefr = { 3: 'B1', 4: 'B2', 5: 'C1' } as const;
+function item(id: string, phrase: string, level: 3 | 4 | 5, meaningKo: string, exampleEn: string, exampleKo: string, spokenExampleEn: string, writtenExampleEn: string, usageNoteKo: string): WordSeed {
+  return { id: `core-${id}`, word: phrase, pos: 'phrase', level: level as Level, cefr: cefr[level], meaningKo, exampleEn, exampleKo, hasExample: true, isPhrase: true, spokenExampleEn, writtenExampleEn, usageNoteKo };
+}
+
+// Original workplace examples; the spoken and written lines model register, not interchangeable fixed translations.
+const coreWords: readonly WordSeed[] = [
+  item('set-priorities','set priorities',3,'할 일의 순서를 정하다','We need to set priorities before the team starts work.','팀이 일을 시작하기 전에 우선순위를 정해야 해요.',"Let's set priorities for today.",'Please set priorities for the upcoming work cycle.','구어체는 바로 제안하고 문어체는 적용할 기간을 밝혀요.'),
+  item('raise-concern','raise a concern',3,'우려를 제기하다','Please raise a concern if the delivery date seems unrealistic.','납기일이 비현실적으로 보이면 우려를 제기해 주세요.',"I want to raise a concern about the date.",'I would like to raise a concern regarding the proposed delivery date.','문어체에서는 우려의 대상과 근거를 함께 써요.'),
+  item('meet-requirements','meet the requirements',3,'요구 사항을 충족하다','The new design must meet the requirements agreed with the client.','새 디자인은 고객과 합의한 요구 사항을 충족해야 해요.',"Does this meet the requirements?",'The revised design meets the agreed requirements.','구어체는 확인 질문, 문어체는 충족 여부를 명시해요.'),
+  item('keep-informed','keep the client informed',3,'누군가에게 진행 상황을 알리다','Please keep the client informed when the delivery plan changes.','배송 계획이 바뀌면 고객에게 진행 상황을 알려 주세요.',"Keep me informed if anything changes.",'Please keep the client informed of any changes to the delivery plan.','someone 자리에 실제 대상을 넣어 써요.'),
+  item('make-progress','make progress',3,'진전을 이루다','The team can make progress after resolving the login issue.','로그인 문제를 해결한 뒤 팀이 진전을 이뤘어요.',"We're making progress on the fix.",'The team has made progress on resolving the login issue.','문어체에서는 어떤 진전인지 구체화해요.'),
+  item('take-ownership','take ownership',4,'책임지고 맡다','Mina will take ownership of the customer migration plan.','미나는 고객 이전 계획을 책임지고 맡을 거예요.',"Can you take ownership of the migration?",'Mina will take ownership of the customer migration plan.','책임 범위와 담당자를 함께 분명히 해요.'),
+  item('align-on','align on',4,'~에 관해 의견을 맞추다','We should align on the launch criteria before Friday.','금요일 전에 출시 기준에 관해 의견을 맞춰야 해요.',"Let's align on the launch criteria.",'We should align on the launch criteria before Friday.','align on은 업무 구어체에 자연스럽고 공식 문서에는 agree on도 좋아요.'),
+  item('circle-back','circle back',4,'나중에 다시 논의하다','We can circle back after the finance team reviews the numbers.','재무팀이 수치를 검토한 뒤 다시 논의할 수 있어요.',"Let's circle back after lunch.",'We will revisit this issue after the finance review.','circle back은 가벼운 업무 구어체이며 공식 문서에서는 revisit이 명확해요.'),
+  item('walk-through','walk me through',3,'차근차근 설명하다','Could you walk me through the changes in this report?','이 보고서의 변경 사항을 차근차근 설명해 주시겠어요?',"Can you walk me through the changes?",'Please explain the changes in the revised report.','someone 자리에 설명을 듣는 사람을 넣어요.'),
+  item('on-same-page','on the same page',3,'같은 내용을 이해하다','Let us confirm the scope so we are on the same page.','모두 같은 범위를 이해하도록 확인해 봅시다.',"Are we on the same page about scope?",'Please confirm that we share the same understanding of the scope.','구어체 관용구이며 공식 메일에는 이해 내용을 직접 써요.'),
+  item('flag-risk','flag a risk',4,'위험을 미리 알리다','The analyst will flag a risk before the contract is signed.','분석가는 계약 서명 전에 위험을 미리 알릴 거예요.',"I need to flag a risk here.",'I would like to identify a potential risk before contract approval.','위험의 가능성과 시점을 과장 없이 구별해요.'),
+  item('follow-through','follow through on',4,'약속한 일을 끝까지 이행하다','We must follow through on the support commitments we made.','우리가 한 지원 약속을 끝까지 이행해야 해요.',"Let's follow through on our promise.",'We will fulfill the support commitments outlined in the agreement.','follow through on 뒤에는 약속이나 계획을 넣어요.'),
+  item('get-buy-in','get buy-in',4,'동의를 얻다','The manager needs to get buy-in from the regional teams.','관리자는 지역 팀들의 동의를 얻어야 해요.',"Can we get buy-in from the teams?",'We will seek agreement from the regional teams before proceeding.','비격식 업무 표현이며 문어체에는 seek agreement가 안전해요.'),
+  item('sign-off','get sign-off',4,'최종 승인을 받다','We need to get sign-off before releasing the payment.','대금을 지급하기 전에 최종 승인을 받아야 해요.',"Have we got sign-off yet?",'Final approval is required before the payment is released.','승인권자와 승인 대상을 분명히 하세요.'),
+  item('hand-over','hand over',3,'업무를 인계하다','Please hand over the account before your leave starts.','휴가가 시작되기 전에 계정 업무를 인계해 주세요.',"Can you hand over the account today?",'Please hand over responsibility for the account before your leave.','무엇을 누구에게 인계하는지 문어체에서 구체화해요.'),
+  item('bring-up','bring up',3,'화제를 꺼내다','I will bring up the pricing issue at the meeting.','회의에서 가격 문제를 꺼낼게요.',"I'll bring up pricing at the meeting.",'I will raise the pricing issue during the meeting.','bring up은 회의 구어체, raise는 메일에서도 자연스러워요.'),
+  item('look-into','look into',3,'조사하다','The support team will look into the reported error today.','지원팀이 오늘 보고된 오류를 조사할 거예요.',"We'll look into the error today.",'The support team will investigate the reported error today.','문어체에는 investigate가 더 정확하고 격식 있어요.'),
+  item('sort-out','sort out',3,'문제를 해결하다','We should sort out the access issue before the demo.','시연 전에 접근 문제를 해결해야 해요.',"Let's sort out the access issue.",'We will resolve the access issue before the demonstration.','sort out은 구어체, resolve는 공식 경과 보고에 좋아요.'),
+  item('put-together','put together',3,'자료를 준비해 만들다','Can you put together a short summary for the client?','고객을 위한 짧은 요약을 만들어 줄 수 있나요?',"Can you put together a quick summary?",'Please prepare a concise summary for the client.','문어체에는 산출물과 독자를 정확히 적어요.'),
+  item('draw-up','draw up',4,'문서나 계획을 작성하다','Legal will draw up a revised agreement this week.','법무팀이 이번 주에 수정 계약서를 작성할 거예요.',"Can legal draw up the agreement?",'The legal team will draft a revised agreement this week.','계약서에는 draft가 흔하고 draw up도 자연스러워요.'),
+  item('phase-out','phase out',4,'단계적으로 중단하다','We will phase out the old service over three months.','기존 서비스를 3개월에 걸쳐 단계적으로 중단할 거예요.',"When will we phase out the old service?",'The old service will be retired in phases over three months.','즉시 종료가 아니라 단계적으로 없앤다는 뜻이에요.'),
+  item('roll-out','roll out',3,'서비스를 출시하거나 확대하다','The company will roll out the update to all stores.','회사가 모든 매장에 업데이트를 배포할 거예요.',"We're rolling out the update next week.",'The update will be deployed to all stores next week.','구어체의 roll out을 기술 문서에서는 deploy로 구체화할 수 있어요.'),
+  item('scale-up','scale up',4,'규모를 확대하다','We need to scale up support before the campaign begins.','캠페인이 시작되기 전에 지원 규모를 키워야 해요.',"Can we scale up support in time?",'Support capacity must increase before the campaign begins.','무엇을 얼마나 확대하는지 문어체에서 밝히세요.'),
+  item('iron-out','iron out',4,'작은 문제를 해결하다','The teams will iron out the final details tomorrow.','두 팀이 내일 마지막 세부 문제를 해결할 거예요.',"Let's iron out the final details.",'The teams will resolve the remaining details tomorrow.','비격식 관용구이며 큰 위기보다는 세부 문제에 써요.'),
+  item('lay-out','lay out',3,'계획을 명확히 설명하다','The memo will lay out the next steps for staff.','메모에 직원들을 위한 다음 단계를 명확히 적을 거예요.',"Can you lay out the next steps?",'The memo will outline the next steps for staff.','문어체에는 outline이 간결하고 일반적이에요.'),
+  item('narrow-down','narrow down',3,'선택지를 좁히다','We should narrow down the vendor list by Monday.','월요일까지 공급업체 목록을 좁혀야 해요.',"Let's narrow down the vendor list.",'We will reduce the vendor shortlist by Monday.','후보를 줄이는 뜻이며 최종 결정과는 달라요.'),
+  item('weigh-options','weigh the options',4,'선택지를 신중히 비교하다','The board must weigh the options before making a decision.','이사회는 결정을 내리기 전에 선택지를 신중히 비교해야 해요.',"Let's weigh the options first.",'The board will assess the available options before deciding.','weigh는 장단점을 비교한다는 뉘앙스가 있어요.'),
+  item('make-case','make a case for',4,'~의 타당성을 주장하다','The report will make a case for expanding remote support.','보고서는 원격 지원 확대의 타당성을 주장할 거예요.',"Can you make a case for the expansion?",'The report will present evidence supporting the expansion.','단순 주장보다 근거를 제시한다는 뜻이에요.'),
+  item('push-back','push back on',4,'제안에 이의를 제기하다','The client may push back on the proposed increase.','고객이 제안된 인상에 이의를 제기할 수 있어요.',"They might push back on the price.",'The client may object to the proposed price increase.','구어체에는 자연스럽지만 공식 보고서에는 object to가 선명해요.'),
+  item('work-around','work around',4,'문제를 우회해 해결하다','The team can work around the issue until the patch arrives.','패치가 나올 때까지 팀이 문제를 우회해 해결할 수 있어요.',"Can we work around this issue?",'A temporary workaround is available until the patch is released.','임시 우회책과 근본 해결책을 혼동하지 않도록 하세요.'),
+  item('clear-up','clear up',3,'혼란이나 오해를 풀다','A short call could clear up the confusion about pricing.','짧은 통화로 가격에 관한 혼란을 풀 수 있어요.',"Let's clear up the pricing confusion.",'A short call may clarify the pricing terms.','문어체에는 clarify가 더 정확해요.'),
+  item('check-in','check in with',3,'누군가에게 진행 상황을 확인하다','I will check in with the supplier before our meeting.','회의 전에 공급업체에 진행 상황을 확인할게요.',"I'll check in with the supplier.",'I will contact the supplier to confirm the current status.','가벼운 확인 연락에 쓰며 공식 메일에는 목적을 밝혀요.'),
+  item('run-by','run the draft by you',4,'의견을 구하려고 보여주다','Could I run the draft by you before sending it?','보내기 전에 초안을 보여드리고 의견을 구해도 될까요?',"Can I run the draft by you?",'May I share the draft with you for review?','something은 검토받을 자료이며 비격식 표현이에요.'),
+  item('take-stock','take stock of',4,'현황을 점검하다','We should take stock of our resources before expanding.','확대하기 전에 자원을 점검해야 해요.',"Let's take stock of our resources.",'We should assess available resources before expanding.','단순 재고뿐 아니라 상황 전반을 평가한다는 뜻이에요.'),
+  item('draw-line','draw the line',4,'허용 한계를 정하다','We need to draw the line on unplanned requests.','계획에 없던 요청의 허용 한계를 정해야 해요.',"Where do we draw the line on requests?",'We need a clear policy for handling unplanned requests.','구어체 관용구라 정책 문서에는 기준을 직접 써요.'),
+  item('set-expectations','set expectations',3,'기대치를 분명히 하다','Please set expectations with the client before the trial.','시험 운영 전에 고객의 기대치를 분명히 해 주세요.',"Let's set expectations before the trial.",'Please communicate the trial scope and limitations to the client.','기대치를 낮춘다는 뜻이 아니라 범위와 한계를 공유해요.'),
+  item('manage-expectations','manage expectations',4,'기대치를 현실적으로 조율하다','We should manage expectations about the launch timeline.','출시 일정에 관한 기대치를 현실적으로 조율해야 해요.',"Let's manage expectations on timing.",'We should communicate a realistic launch timeline.','불확실성을 숨기지 말고 가능한 일정을 제시하세요.'),
+  item('keep-track','keep track of',3,'지속적으로 기록해 파악하다','Please keep track of every change to the contract.','계약서의 모든 변경 사항을 계속 기록해 주세요.',"Can you keep track of the changes?",'Please maintain a record of all contract changes.','구어체는 추적을, 문어체는 기록 보존을 명시해요.'),
+  item('stay-on-track','stay on track',3,'계획대로 진행되다','Regular reviews help the project stay on track.','정기 검토는 프로젝트가 계획대로 진행되게 도와줘요.',"Are we still on track?",'The project remains on schedule after the review.','on track은 계획 전반, on schedule은 일정에 초점을 둬요.'),
+  item('fall-behind','fall behind',3,'일정에 뒤처지다','The team may fall behind if the supplier delays shipment.','공급업체가 배송을 늦추면 팀이 일정에 뒤처질 수 있어요.',"Are we falling behind on delivery?",'Delivery may be delayed if the supplier misses the shipment date.','원인과 영향을 문어체에서 구체적으로 연결해요.'),
+  item('catch-up','catch up on',3,'밀린 일을 따라잡다','I need to catch up on the reports after my leave.','휴가 뒤에 밀린 보고서를 따라잡아야 해요.',"I need to catch up on the reports.",'I will review the outstanding reports after my leave.','대화에서 친근하고 보고서에는 미처리 업무를 명시해요.'),
+  item('touch-on','touch on',4,'주제를 간단히 언급하다','The presentation will touch on the new pricing model.','발표에서 새 가격 체계를 간단히 언급할 거예요.',"I'll touch on pricing briefly.",'The presentation will briefly address the new pricing model.','깊게 다루는 뜻이 아니라 잠깐 언급하는 뜻이에요.'),
+  item('go-over','go over',3,'함께 살펴보다','Can we go over the figures before the meeting?','회의 전에 수치를 함께 살펴볼 수 있을까요?',"Let's go over the figures.",'Please review the figures before the meeting.','구어체에서는 함께 확인하는 느낌이 강해요.'),
+  item('bring-forward','bring forward',4,'일정을 앞당기다','Could we bring forward the review to Tuesday?','검토 일정을 화요일로 앞당길 수 있을까요?',"Can we bring forward the review?",'Could the review be moved forward to Tuesday?','영국식 업무 영어에서 자연스러우며 미국식에는 move up도 흔해요.'),
+  item('hold-off','hold off on',4,'당분간 미루다','Let us hold off on hiring until the budget is approved.','예산이 승인될 때까지 채용을 미룹시다.',"Let's hold off on hiring for now.",'Hiring should be deferred until the budget is approved.','영구 취소가 아니라 조건부 연기라는 뜻이에요.'),
+  item('move-forward','move forward with',3,'~을 계속 추진하다','We can move forward with the plan after approval.','승인 후에 계획을 계속 추진할 수 있어요.',"Can we move forward with the plan?",'We can proceed with the plan once approval is granted.','승인 여부를 문어체에서 분명히 구분해요.'),
+  item('carry-out','carry out',3,'계획이나 조사를 수행하다','The team will carry out a survey next month.','팀이 다음 달에 설문조사를 실시할 거예요.',"Can we carry out the survey soon?",'The team will conduct the survey next month.','조사에는 conduct가 공식 문서에서 흔해요.'),
+  item('account-for','account for',4,'수치나 차이를 설명하다','We cannot account for the difference in these figures.','우리는 이 수치 차이를 설명할 수 없어요.',"Can we account for this difference?",'The variance in these figures remains unexplained.','account for는 차이의 원인을 설명한다는 뜻이에요.'),
+  item('factor-in','factor in',4,'요소를 고려에 넣다','Please factor in delivery costs when calculating the total.','총액을 계산할 때 배송비를 고려에 넣어 주세요.',"Did you factor in delivery costs?",'Please include delivery costs in the total calculation.','숨은 비용을 빠뜨리지 않는다는 맥락에 자주 써요.'),
+  item('build-in','build in',4,'처음부터 포함하도록 설계하다','We should build in extra time for legal review.','법무 검토를 위한 여유 시간을 처음부터 포함해야 해요.',"Let's build in time for legal review.",'The schedule should include additional time for legal review.','나중에 더하는 것이 아니라 계획에 미리 포함하는 뜻이에요.'),
+  item('write-off','write off',5,'회계상 손실로 처리하다','Finance may write off the unpaid balance this quarter.','재무팀이 이번 분기에 미수금을 손실로 처리할 수 있어요.',"Will we write off the balance?",'The unpaid balance may be recognized as a loss this quarter.','회계 용어이며 단순 포기한다는 일상 의미와 구별해요.'),
+  item('break-even','break even',4,'손익분기점에 도달하다','The new service could break even within two years.','새 서비스는 2년 안에 손익분기점에 도달할 수 있어요.',"When do we break even?",'The service is projected to reach break-even within two years.','추정치와 확정 실적을 구별해요.'),
+  item('rule-out','rule out',4,'가능성을 배제하다','We cannot rule out further delays until testing ends.','시험이 끝나기 전까지 추가 지연 가능성을 배제할 수 없어요.',"Can we rule out more delays?",'Further delays cannot yet be excluded.','불확실성을 말할 때 단정적으로 쓰지 않도록 주의해요.'),
+  item('back-up','back up',3,'주장을 근거로 뒷받침하다','Can you back up the estimate with recent data?','최근 자료로 그 추정치를 뒷받침할 수 있나요?',"Can you back up that estimate?",'Please provide recent data to support the estimate.','back up은 자료 백업 뜻도 있으므로 문맥을 확인하세요.'),
+  item('point-out','point out',3,'중요한 사실을 지적하다','She will point out the missing assumptions in the forecast.','그녀는 예측에서 빠진 가정을 지적할 거예요.',"Can I point out a missing assumption?",'I would like to highlight an assumption missing from the forecast.','문어체에서는 비판의 강도를 낮추는 highlight도 쓸 수 있어요.'),
+  item('sum-up','sum up',3,'핵심을 요약하다','Could you sum up the decision before we leave?','자리를 뜨기 전에 결정을 요약해 주시겠어요?',"Can you sum up the decision?",'Please summarize the decision and agreed next steps.','문어체에서는 다음 행동까지 포함하면 유용해요.'),
+  item('reach-agreement','reach an agreement',3,'합의에 이르다','Both teams hope to reach an agreement by Friday.','두 팀은 금요일까지 합의에 이르기를 바라요.',"Can we reach an agreement today?",'Both teams aim to reach an agreement by Friday.','합의 기대와 체결 완료를 구분해요.'),
+  item('make-compromise','reach a compromise',4,'서로 양보해 타협하다','Both sides may reach a compromise on the delivery schedule.','양측이 납기 일정에서 서로 양보해 타협할 수 있어요.',"Can we make a compromise on timing?",'Both parties may agree to adjust the delivery schedule.','문어체는 무엇을 조정하는지 구체적으로 밝혀요.'),
+  item('draw-conclusion','draw a conclusion',4,'결론을 내리다','We should not draw a conclusion before reviewing all responses.','모든 답변을 검토하기 전에 결론을 내려서는 안 돼요.',"Let's not draw a conclusion yet.",'A conclusion should follow a review of all responses.','충분한 근거를 검토한 뒤 판단한다는 뜻이에요.'),
+];
+
+const synonymNotes: Record<string, Array<{ word: string; nuanceKo: string }>> = {
+  'core-set-priorities': [{ word: 'rank tasks', nuanceKo: '개별 과업의 순위를 구체적으로 매길 때' }],
+  'core-raise-concern': [{ word: 'flag an issue', nuanceKo: '업무 중 문제를 빠르게 알릴 때, 조금 덜 격식 있음' }],
+  'core-meet-requirements': [{ word: 'satisfy the criteria', nuanceKo: '명시된 평가 기준을 충족할 때 더 정확함' }],
+  'core-take-ownership': [{ word: 'assume responsibility', nuanceKo: '책임의 공식적 인수를 표현할 때' }],
+  'core-circle-back': [{ word: 'revisit', nuanceKo: '문서나 공식 회의에서 다시 검토할 때' }],
+  'core-on-same-page': [{ word: 'share the same understanding', nuanceKo: '공식 문서에서 합의된 이해를 명확히 적을 때' }],
+  'core-get-buy-in': [{ word: 'secure agreement', nuanceKo: '이해관계자의 명시적 동의를 확보할 때' }],
+  'core-sign-off': [{ word: 'obtain approval', nuanceKo: '정식 승인 절차를 강조할 때' }],
+  'core-look-into': [{ word: 'investigate', nuanceKo: '체계적으로 원인을 조사할 때' }],
+  'core-sort-out': [{ word: 'resolve', nuanceKo: '문제가 실제 해결된 결과를 말할 때' }],
+  'core-phase-out': [{ word: 'retire gradually', nuanceKo: '제품이나 서비스를 단계적으로 종료할 때' }],
+  'core-rule-out': [{ word: 'exclude the possibility', nuanceKo: '공식 보고에서 가능성을 배제할 때' }],
+};
+
+export const BUSINESS_CORE_WORDS: readonly WordSeed[] = coreWords.map(word => ({
+  ...word, domain: 'business', ...(synonymNotes[word.id] ? { synonyms: synonymNotes[word.id] } : {}),
+}));
