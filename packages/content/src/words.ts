@@ -2,6 +2,11 @@ import type { Cefr, Level, PartOfSpeech, WordSeed } from "./types.js";
 import { BUSINESS_CORE_WORDS } from "./business-core.js";
 import { MEETINGS_EMAIL_WORDS } from "./packs/meetings-email.js";
 import { NEGOTIATION_CUSTOMER_WORDS } from "./packs/negotiation-customer.js";
+import { LEADERSHIP_WORDS } from "./packs/leadership.js";
+import { FINANCE_CONTRACTS_WORDS } from "./packs/finance-contracts.js";
+import { SALES_MARKETING_WORDS } from "./packs/sales-marketing.js";
+import { OPERATIONS_WORDS } from "./packs/operations.js";
+import { WORKPLACE_COMMUNICATION_WORDS } from "./packs/workplace-communication.js";
 
 const cefrByLevel: Record<Level, Cefr> = { 1: "A1", 2: "A2", 3: "B1", 4: "B2", 5: "C1", 6: "C2" };
 const seed = (id: string, word: string, pos: PartOfSpeech, level: Level, meaningKo: string, exampleEn: string, exampleKo: string): WordSeed => ({ id, word, pos, level, cefr: cefrByLevel[level], meaningKo, exampleEn, exampleKo, hasExample: true, isPhrase: pos === "phrase" });
@@ -149,6 +154,11 @@ export const CONTENT_PACKS: readonly { id: string; version: number; words: reado
   { id: "business-core", version: 1, words: BUSINESS_CORE_WORDS },
   { id: "meetings-email", version: 1, words: MEETINGS_EMAIL_WORDS },
   { id: "negotiation-customer", version: 1, words: NEGOTIATION_CUSTOMER_WORDS },
+  { id: "leadership", version: 1, words: LEADERSHIP_WORDS },
+  { id: "finance-contracts", version: 1, words: FINANCE_CONTRACTS_WORDS },
+  { id: "sales-marketing", version: 1, words: SALES_MARKETING_WORDS },
+  { id: "operations", version: 1, words: OPERATIONS_WORDS },
+  { id: "workplace-communication", version: 1, words: WORKPLACE_COMMUNICATION_WORDS },
 ];
 
 export const WORD_SEEDS: readonly WordSeed[] = CONTENT_PACKS.flatMap(pack => pack.words);
