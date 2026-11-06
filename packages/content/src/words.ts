@@ -7,6 +7,17 @@ import { FINANCE_CONTRACTS_WORDS } from "./packs/finance-contracts.js";
 import { SALES_MARKETING_WORDS } from "./packs/sales-marketing.js";
 import { OPERATIONS_WORDS } from "./packs/operations.js";
 import { WORKPLACE_COMMUNICATION_WORDS } from "./packs/workplace-communication.js";
+import { TRADE_VENDORS_WORDS } from "./packs/trade-vendors.js";
+import { PRODUCT_TECH_WORDS } from "./packs/product-tech.js";
+import { EXECUTIVE_COMMUNICATION_WORDS } from "./packs/executive-communication.js";
+import { STRATEGY_ANALYTICS_WORDS } from "./packs/strategy-analytics.js";
+import { RISK_QUALITY_WORDS } from "./packs/risk-quality.js";
+import { HR_CAREER_WORDS } from "./packs/hr-career.js";
+import { GENERAL_PROFESSIONAL_WORDS } from "./packs/general-professional.js";
+import { BUSINESS_WRITING_WORDS } from "./packs/business-writing.js";
+import { REMOTE_COLLABORATION_WORDS } from "./packs/remote-collaboration.js";
+import { FACILITATION_QA_WORDS } from "./packs/facilitation-qa.js";
+import { PROBLEM_SOLVING_WORDS } from "./packs/problem-solving.js";
 
 const cefrByLevel: Record<Level, Cefr> = { 1: "A1", 2: "A2", 3: "B1", 4: "B2", 5: "C1", 6: "C2" };
 const seed = (id: string, word: string, pos: PartOfSpeech, level: Level, meaningKo: string, exampleEn: string, exampleKo: string): WordSeed => ({ id, word, pos, level, cefr: cefrByLevel[level], meaningKo, exampleEn, exampleKo, hasExample: true, isPhrase: pos === "phrase" });
@@ -159,6 +170,17 @@ export const CONTENT_PACKS: readonly { id: string; version: number; words: reado
   { id: "sales-marketing", version: 1, words: SALES_MARKETING_WORDS },
   { id: "operations", version: 1, words: OPERATIONS_WORDS },
   { id: "workplace-communication", version: 1, words: WORKPLACE_COMMUNICATION_WORDS },
+  { id: "trade-vendors", version: 1, words: TRADE_VENDORS_WORDS },
+  { id: "product-tech", version: 1, words: PRODUCT_TECH_WORDS },
+  { id: "executive-communication", version: 1, words: EXECUTIVE_COMMUNICATION_WORDS },
+  { id: "strategy-analytics", version: 1, words: STRATEGY_ANALYTICS_WORDS },
+  { id: "risk-quality", version: 1, words: RISK_QUALITY_WORDS },
+  { id: "hr-career", version: 1, words: HR_CAREER_WORDS },
+  { id: "general-professional", version: 1, words: GENERAL_PROFESSIONAL_WORDS },
+  { id: "business-writing", version: 1, words: BUSINESS_WRITING_WORDS },
+  { id: "remote-collaboration", version: 1, words: REMOTE_COLLABORATION_WORDS },
+  { id: "facilitation-qa", version: 1, words: FACILITATION_QA_WORDS },
+  { id: "problem-solving", version: 1, words: PROBLEM_SOLVING_WORDS },
 ];
 
 export const WORD_SEEDS: readonly WordSeed[] = CONTENT_PACKS.flatMap(pack => pack.words);

@@ -13,13 +13,15 @@ const deterministicRandom = () => {
 test("all original seed words satisfy content policy", () => {
   assert.equal(BASE_WORD_SEEDS.length, 126);
   assert.equal(CONTENT_PACKS[1].words.length, 59);
-  assert.equal(WORD_SEEDS.length, 775);
+  assert.equal(WORD_SEEDS.length, 1560);
   assert.equal(WORD_SEEDS.length, CONTENT_PACKS.reduce((sum, pack) => sum + pack.words.length, 0));
-  assert.deepEqual(CONTENT_PACKS.map(pack => [pack.id, pack.version]), [["foundation", 1], ["business-core", 1], ["meetings-email", 1], ["negotiation-customer", 1], ["leadership", 1], ["finance-contracts", 1], ["sales-marketing", 1], ["operations", 1], ["workplace-communication", 1]]);
+  assert.deepEqual(CONTENT_PACKS.map(pack => [pack.id, pack.version]), [["foundation", 1], ["business-core", 1], ["meetings-email", 1], ["negotiation-customer", 1], ["leadership", 1], ["finance-contracts", 1], ["sales-marketing", 1], ["operations", 1], ["workplace-communication", 1], ["trade-vendors", 1], ["product-tech", 1], ["executive-communication", 1], ["strategy-analytics", 1], ["risk-quality", 1], ["hr-career", 1], ["general-professional", 1], ["business-writing", 1], ["remote-collaboration", 1], ["facilitation-qa", 1], ["problem-solving", 1]]);
   assert.deepEqual(validateWords(WORD_SEEDS), []);
   assert.ok(WORD_SEEDS.filter(word => word.cefr === "C2").length >= 18);
-  assert.equal(WORD_SEEDS.filter(word => word.spokenExampleEn && word.writtenExampleEn).length, 703);
+  assert.equal(WORD_SEEDS.filter(word => word.spokenExampleEn && word.writtenExampleEn).length, 1082);
   assert.equal(CONTENT_PACKS[1].words.filter(word => word.synonyms?.length).length, 12);
+  assert.equal(WORD_SEEDS.filter(word => word.spokenExampleEn && word.spokenExampleEn === word.exampleEn).length, 0);
+  assert.equal(WORD_SEEDS.filter(word => word.spokenExampleEn && word.spokenExampleEn === word.writtenExampleEn).length, 0);
 });
 
 test("optional enrichment fields require bounded, sourced content", () => {
