@@ -13,9 +13,43 @@ const deterministicRandom = () => {
 test("all original seed words satisfy content policy", () => {
   assert.equal(BASE_WORD_SEEDS.length, 126);
   assert.equal(CONTENT_PACKS[1].words.length, 59);
-  assert.equal(WORD_SEEDS.length, 1560);
+  assert.equal(WORD_SEEDS.length, 2517);
   assert.equal(WORD_SEEDS.length, CONTENT_PACKS.reduce((sum, pack) => sum + pack.words.length, 0));
-  assert.deepEqual(CONTENT_PACKS.map(pack => [pack.id, pack.version]), [["foundation", 1], ["business-core", 1], ["meetings-email", 1], ["negotiation-customer", 1], ["leadership", 1], ["finance-contracts", 1], ["sales-marketing", 1], ["operations", 1], ["workplace-communication", 1], ["trade-vendors", 1], ["product-tech", 1], ["executive-communication", 1], ["strategy-analytics", 1], ["risk-quality", 1], ["hr-career", 1], ["general-professional", 1], ["business-writing", 1], ["remote-collaboration", 1], ["facilitation-qa", 1], ["problem-solving", 1]]);
+  assert.deepEqual(CONTENT_PACKS.map(pack => [pack.id, pack.version]), [
+    ["foundation", 1],
+    ["business-core", 1],
+    ["meetings-email", 1],
+    ["negotiation-customer", 1],
+    ["leadership", 1],
+    ["finance-contracts", 1],
+    ["sales-marketing", 1],
+    ["operations", 1],
+    ["workplace-communication", 1],
+    ["trade-vendors", 1],
+    ["product-tech", 1],
+    ["executive-communication", 1],
+    ["strategy-analytics", 1],
+    ["risk-quality", 1],
+    ["hr-career", 1],
+    ["general-professional", 1],
+    ["business-writing", 1],
+    ["remote-collaboration", 1],
+    ["facilitation-qa", 1],
+    ["problem-solving", 1],
+    ["customer-success-advanced", 1],
+    ["data-decisions", 1],
+    ["global-business", 1],
+    ["negotiation-advanced", 1],
+    ["process-improvement", 1],
+    ["professional-fluency", 1],
+    ["office-administration", 1],
+    ["business-travel-events", 1],
+    ["customer-research", 1],
+    ["goals-planning", 1],
+    ["technology-change", 1],
+    ["contract-communication", 1],
+    ["market-performance", 1],
+  ]);
   assert.deepEqual(validateWords(WORD_SEEDS), []);
   assert.ok(WORD_SEEDS.filter(word => word.cefr === "C2").length >= 18);
   assert.equal(WORD_SEEDS.filter(word => word.spokenExampleEn && word.writtenExampleEn).length, 1082);

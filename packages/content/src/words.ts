@@ -18,6 +18,19 @@ import { BUSINESS_WRITING_WORDS } from "./packs/business-writing.js";
 import { REMOTE_COLLABORATION_WORDS } from "./packs/remote-collaboration.js";
 import { FACILITATION_QA_WORDS } from "./packs/facilitation-qa.js";
 import { PROBLEM_SOLVING_WORDS } from "./packs/problem-solving.js";
+import { CUSTOMER_SUCCESS_ADVANCED_WORDS } from "./packs/customer-success-advanced.js";
+import { DATA_DECISIONS_WORDS } from "./packs/data-decisions.js";
+import { GLOBAL_BUSINESS_WORDS } from "./packs/global-business.js";
+import { NEGOTIATION_ADVANCED_WORDS } from "./packs/negotiation-advanced.js";
+import { PROCESS_IMPROVEMENT_WORDS } from "./packs/process-improvement.js";
+import { PROFESSIONAL_FLUENCY_WORDS } from "./packs/professional-fluency.js";
+import { OFFICE_ADMINISTRATION_WORDS } from "./packs/office-administration.js";
+import { BUSINESS_TRAVEL_EVENTS_WORDS } from "./packs/business-travel-events.js";
+import { CUSTOMER_RESEARCH_WORDS } from "./packs/customer-research.js";
+import { GOALS_PLANNING_WORDS } from "./packs/goals-planning.js";
+import { TECHNOLOGY_CHANGE_WORDS } from "./packs/technology-change.js";
+import { CONTRACT_COMMUNICATION_WORDS } from "./packs/contract-communication.js";
+import { MARKET_PERFORMANCE_WORDS } from "./packs/market-performance.js";
 
 const cefrByLevel: Record<Level, Cefr> = { 1: "A1", 2: "A2", 3: "B1", 4: "B2", 5: "C1", 6: "C2" };
 const seed = (id: string, word: string, pos: PartOfSpeech, level: Level, meaningKo: string, exampleEn: string, exampleKo: string): WordSeed => ({ id, word, pos, level, cefr: cefrByLevel[level], meaningKo, exampleEn, exampleKo, hasExample: true, isPhrase: pos === "phrase" });
@@ -181,6 +194,19 @@ export const CONTENT_PACKS: readonly { id: string; version: number; words: reado
   { id: "remote-collaboration", version: 1, words: REMOTE_COLLABORATION_WORDS },
   { id: "facilitation-qa", version: 1, words: FACILITATION_QA_WORDS },
   { id: "problem-solving", version: 1, words: PROBLEM_SOLVING_WORDS },
+  { id: "customer-success-advanced", version: 1, words: CUSTOMER_SUCCESS_ADVANCED_WORDS },
+  { id: "data-decisions", version: 1, words: DATA_DECISIONS_WORDS },
+  { id: "global-business", version: 1, words: GLOBAL_BUSINESS_WORDS },
+  { id: "negotiation-advanced", version: 1, words: NEGOTIATION_ADVANCED_WORDS },
+  { id: "process-improvement", version: 1, words: PROCESS_IMPROVEMENT_WORDS },
+  { id: "professional-fluency", version: 1, words: PROFESSIONAL_FLUENCY_WORDS },
+  { id: "office-administration", version: 1, words: OFFICE_ADMINISTRATION_WORDS },
+  { id: "business-travel-events", version: 1, words: BUSINESS_TRAVEL_EVENTS_WORDS },
+  { id: "customer-research", version: 1, words: CUSTOMER_RESEARCH_WORDS },
+  { id: "goals-planning", version: 1, words: GOALS_PLANNING_WORDS },
+  { id: "technology-change", version: 1, words: TECHNOLOGY_CHANGE_WORDS },
+  { id: "contract-communication", version: 1, words: CONTRACT_COMMUNICATION_WORDS },
+  { id: "market-performance", version: 1, words: MARKET_PERFORMANCE_WORDS },
 ];
 
 export const WORD_SEEDS: readonly WordSeed[] = CONTENT_PACKS.flatMap(pack => pack.words);
