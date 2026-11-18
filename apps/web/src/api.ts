@@ -14,15 +14,37 @@ export type SpeakingScenario={id:string;title:string;description:string;level:nu
 export type SpeakingSession={id:string;scenarioId:string;cefr:string;targetWords:Array<{id:string;word:string;meaningKo:string}>;messages:Array<{id:string;role:'user'|'ai';text:string}>;usedWordIds:string[];finishedAt:string|null;summary:SpeakingSummary|null};
 export type SpeakingSummary={corrections:Array<{original:string;corrected:string;explanationKo:string}>;expressions:Array<{phrase:string;meaningKo:string}>;targetWords:Array<{id:string;word:string;used:boolean}>;coaching?:{strengthKo:string;focusKo:string;nextPracticeKo:string};languageInsights?:Array<{original:string;naturalAlternative:string;spoken:string;written:string;explanationKo:string;synonyms:Array<{expression:string;nuanceKo:string}>}>};
 export type SavedPhrase={id:string;phrase:string;meaningKo:string;savedAt:string};
-const configuredBase=(import.meta.env.VITE_API_BASE_URL as string|undefined)?.replace(/\/$/,'');
-const savedBase=typeof window!=='undefined'?window.localStorage.getItem('lingo-loop-api-url')?.replace(/\/$/,''):undefined;
-const base=savedBase||configuredBase;
+const apiUrlStorageKey = 'lingo-loop-api-url';
+const productionAppUrl = 'https://englishlearning-phi.vercel.app';
+const productionServerUrl = 'https://macmini.tail6e49f8.ts.net';
+
+function parseApiOrigin(value: string): string {
+  const url = new URL(value.trim());
+  if (url.protocol !== 'https:' && !(url.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(url.hostname))) {
+    throw new Error('학습 서버 주소는 HTTPS여야 해요.');
+  }
+  return url.origin;
+}
+
+function readSavedApiOrigin(): string {
+  try {
+    const saved = window.localStorage.getItem(apiUrlStorageKey);
+    return saved ? parseApiOrigin(saved) : '';
+  } catch {
+    return '';
+  }
+}
+
+const configuredBase = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim().replace(/\/$/, '');
+export const defaultApiBaseUrl = configuredBase ||
+  (typeof window !== 'undefined' && window.location.origin === productionAppUrl ? productionServerUrl : '');
+const base = readSavedApiOrigin() || defaultApiBaseUrl;
 export const isApiConfigured=Boolean(base);
 export const apiBaseUrl=base||'';
 export function saveApiBaseUrl(value:string){
- const trimmed=value.trim().replace(/\/$/,'');
- if(trimmed){const parsed=new URL(trimmed);if(parsed.protocol!=='https:'&&!(parsed.protocol==='http:'&&['localhost','127.0.0.1'].includes(parsed.hostname)))throw new Error('학습 서버 주소는 HTTPS여야 해요.');window.localStorage.setItem('lingo-loop-api-url',parsed.origin)}
- else window.localStorage.removeItem('lingo-loop-api-url');
+ const origin = value.trim() ? parseApiOrigin(value) : '';
+ if (origin && origin !== defaultApiBaseUrl) window.localStorage.setItem(apiUrlStorageKey, origin);
+ else window.localStorage.removeItem(apiUrlStorageKey);
  window.location.reload();
 }
 export class ApiError extends Error{constructor(public readonly status:number,message:string){super(message)}}
