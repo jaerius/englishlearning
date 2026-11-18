@@ -74,3 +74,14 @@ test('mastered count follows stage four and high-level learners can continue wit
   assert.ok(next.every(word => word.level < 6));
   assert.ok(localWords.some(word => word.spokenExampleEn && word.writtenExampleEn && word.usageNoteKo));
 });
+
+test('B2 and C1 settings prioritize the chosen level and only draw new words from that range', () => {
+  for (const level of [4, 5]) {
+    assert.equal(selectNewWords({}, level, 1)[0].level, level);
+    const progress = Object.fromEntries(localWords.filter(word => word.level === level).map(word =>
+      [word.id, nextProgress(undefined, true, false)]));
+    const next = selectNewWords(progress, level, localWords.length);
+    assert.ok(next.length > 0);
+    assert.ok(next.every(word => word.level === 9 - level));
+  }
+});

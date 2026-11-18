@@ -32,3 +32,16 @@ test('a correct first answer cannot be submitted again', async () => {
   await service.answer({ sessionId: 'session-1', wordId: 'l1-arrive', quizType: 'B', isCorrect: true, hintUsed: false });
   await assert.rejects(() => service.answer({ sessionId: 'session-1', wordId: 'l1-arrive', quizType: 'B', isCorrect: true, hintUsed: false }), /ANSWER_ALREADY_SUBMITTED/);
 });
+
+test('daily study uses the B2–C1 range and retains previously learned reviews', async () => {
+  const { db, service } = fixture();
+  db.settings.userLevel = 5;
+  db.settings.dailyNewCount = 2;
+  db.words = db.words.filter(word => word.id === 'l1-arrive' ||
+    [4, 5, 6].some(level => db.words.find(candidate => candidate.level === level && candidate.hasExample)?.id === word.id));
+  const session = await service.create({ kind: 'daily' });
+  assert.deepEqual(session.newWords.map(word => word.level), [5, 4]);
+  assert.ok(session.quizQueue.some(quiz => quiz.wordId === 'l1-arrive'));
+  const next = await service.create({ kind: 'daily' });
+  assert.equal(next.newWords.length, 0);
+});

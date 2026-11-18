@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { isB2C1StudyLevel } from '@lingo-loop/content/dist/index.js';
 import { randomUUID } from 'node:crypto';
 import { StoreService } from '../common/store.service.js';
 import { kstDate } from '../common/date.js';
@@ -12,7 +13,19 @@ type Quiz = { wordId:string; type:'A'|'B'|'C'; prompt:string; translation:string
  async create(input:CreateStudySessionDto){ return this.store.update(db=>{ const today=kstDate(), level=db.settings.userLevel||1; let selected:UserWord[]=[]; let newWords:Word[]=[];
    if(input.wordIds?.length){selected=db.userWords.filter(item=>input.wordIds!.includes(item.wordId));}
    else { selected=db.userWords.filter(item=>item.nextReviewAt<=today).sort((a,b)=>a.nextReviewAt.localeCompare(b.nextReviewAt)).slice(0,db.settings.reviewCap); }
-   if(input.kind==='daily'){ const known=new Set(db.userWords.map(item=>item.wordId)); newWords=db.words.filter(word=>word.hasExample&&!known.has(word.id)&&word.level>=level).sort((a,b)=>a.level-b.level).slice(0,db.settings.dailyNewCount); for(const word of newWords){const progress:UserWord={id:randomUUID(),wordId:word.id,stage:0,nextReviewAt:today,correctCount:0,wrongCount:0,status:'new',flaggedUnknown:false,spokenCount:0,lastSpokenAt:null,lastStudiedAt:null};db.userWords.push(progress);selected.unshift(progress);} }
+   if (input.kind === 'daily') {
+     const known = new Set(db.userWords.map(item => item.wordId));
+     const b2c1 = isB2C1StudyLevel(level);
+     newWords = db.words.filter(word => word.hasExample && !known.has(word.id) &&
+       (b2c1 ? isB2C1StudyLevel(word.level) : word.level >= level))
+       .sort((a, b) => Math.abs(a.level - level) - Math.abs(b.level - level))
+       .slice(0, db.settings.dailyNewCount);
+     for (const word of newWords) {
+       const progress: UserWord = { id: randomUUID(), wordId: word.id, stage: 0, nextReviewAt: today, correctCount: 0, wrongCount: 0, status: 'new', flaggedUnknown: false, spokenCount: 0, lastSpokenAt: null, lastStudiedAt: null };
+       db.userWords.push(progress);
+       selected.unshift(progress);
+     }
+   }
    const unique=[...new Map(selected.map(item=>[item.wordId,item])).values()]; const session={id:randomUUID(),kind:input.kind,startedAt:new Date().toISOString(),finishedAt:null,wordIds:unique.map(item=>item.wordId),totalCount:unique.length,correctCount:0} as const; db.studySessions.push({...session});
    return {sessionId:session.id,newWords,quizQueue:unique.map(item=>this.quiz(db,item))}; }); }
  private quiz(db:Database, progress:UserWord):Quiz { const word=db.words.find(item=>item.id===progress.wordId); if(!word) throw new NotFoundException('WORD_NOT_FOUND'); const type:Quiz['type']=progress.stage<=1?'A':progress.stage<=3?'B':'C'; const peers=db.words.filter(item=>item.id!==word.id&&item.level===word.level); if(type==='A') return {wordId:word.id,type,prompt:word.word,translation:word.exampleKo,options:[word.meaningKo,...peers.slice(0,3).map(item=>item.meaningKo)].sort(()=>Math.random()-.5),answer:word.meaningKo,stage:progress.stage}; if(type==='B') return {wordId:word.id,type,prompt:word.exampleEn.replace(new RegExp(word.word,'i'),'____'),translation:word.exampleKo,options:[word.word,...peers.slice(0,3).map(item=>item.word)].sort(()=>Math.random()-.5),answer:word.word,stage:progress.stage}; return {wordId:word.id,type,prompt:`${word.meaningKo} · ${word.pos}`,translation:word.exampleKo,options:[],answer:word.word,stage:progress.stage}; }
