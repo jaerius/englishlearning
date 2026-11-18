@@ -71,17 +71,19 @@ test('mastered count follows stage four and high-level learners can continue wit
   assert.equal(metrics.masteredCount, Object.keys(progress).length);
   const next = selectNewWords(progress, 6, 10);
   assert.equal(next.length, 10);
-  assert.ok(next.every(word => word.level < 6));
+  assert.ok(next.every(word => word.level === 5));
   assert.ok(localWords.some(word => word.spokenExampleEn && word.writtenExampleEn && word.usageNoteKo));
 });
 
-test('B2 and C1 settings prioritize the chosen level and only draw new words from that range', () => {
-  for (const level of [4, 5]) {
-    assert.equal(selectNewWords({}, level, 1)[0].level, level);
-    const progress = Object.fromEntries(localWords.filter(word => word.level === level).map(word =>
-      [word.id, nextProgress(undefined, true, false)]));
-    const next = selectNewWords(progress, level, localWords.length);
-    assert.ok(next.length > 0);
-    assert.ok(next.every(word => word.level === 9 - level));
+test('B2–C2 new words prioritize the chosen level and default older placements to B2', () => {
+  for (const [level, expected] of [[1, [4, 5, 6]], [4, [4, 5, 6]], [5, [5, 4, 6]], [6, [6, 5, 4]]]) {
+    const progress = { 'l1-arrive': nextProgress(undefined, true, false) };
+    const previous = structuredClone(progress);
+    const words = selectNewWords(progress, level, localWords.length);
+    assert.deepEqual([...new Set(words.map(word => word.level))], expected);
+    assert.deepEqual(progress, previous);
+
+    for (const word of words) progress[word.id] = nextProgress(undefined, true, false);
+    assert.deepEqual(selectNewWords(progress, level, 10), []);
   }
 });

@@ -34,20 +34,27 @@ test('a correct first answer cannot be submitted again', async () => {
   await assert.rejects(() => service.answer({ sessionId: 'session-1', wordId: 'l1-arrive', quizType: 'B', isCorrect: true, hintUsed: false }), /ANSWER_ALREADY_SUBMITTED/);
 });
 
-test('daily study uses the B2–C1 range and retains previously learned reviews', async () => {
-  const { db, service } = fixture();
-  db.settings.userLevel = 5;
-  db.settings.dailyNewCount = 2;
-  db.words = db.words.filter(word => word.id === 'l1-arrive' ||
-    [4, 5, 6].some(level => db.words.find(candidate => candidate.level === level && candidate.hasExample)?.id === word.id));
-  const session = await service.create({ kind: 'daily' });
-  assert.deepEqual(session.newWords.map(word => word.level), [5, 4]);
-  assert.ok(session.quizQueue.some(quiz => quiz.wordId === 'l1-arrive'));
-  for (const word of session.newWords) {
-    await service.answer({ sessionId: session.sessionId, wordId: word.id, quizType: 'A', isCorrect: true, hintUsed: false });
+test('daily study prioritizes the chosen B2–C2 level and retains previously learned reviews', async () => {
+  for (const [preferred, expected] of [[null, [4, 5, 6]], [2, [4, 5, 6]], [4, [4, 5, 6]], [5, [5, 4, 6]], [6, [6, 5, 4]]] as const) {
+    const { db, service } = fixture();
+    db.settings.userLevel = preferred;
+    db.settings.dailyNewCount = 5;
+    db.words = [1, 2, 3, 4, 5, 6].map(level => db.words.find(word =>
+      word.hasExample && word.level === level && (level !== 1 || word.id === 'l1-arrive'))!);
+    const previous = structuredClone(db.userWords[0]);
+
+    const session = await service.create({ kind: 'daily' });
+    assert.deepEqual(session.newWords.map(word => word.level), expected);
+    assert.ok(session.quizQueue.some(quiz => quiz.wordId === previous.wordId));
+    assert.deepEqual(db.userWords[0], previous);
+    assert.equal(db.settings.userLevel, preferred);
+
+    for (const word of session.newWords) {
+      await service.answer({ sessionId: session.sessionId, wordId: word.id, quizType: 'A', isCorrect: true, hintUsed: false });
+    }
+    const next = await service.create({ kind: 'daily' });
+    assert.equal(next.newWords.length, 0);
   }
-  const next = await service.create({ kind: 'daily' });
-  assert.equal(next.newWords.length, 0);
 });
 
 test('an oversized abandoned session does not turn unattempted words into reviews', async () => {

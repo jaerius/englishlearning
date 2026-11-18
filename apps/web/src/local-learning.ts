@@ -1,5 +1,5 @@
 import { WORD_SEEDS } from '../../../packages/content/src/words';
-import { isB2C1StudyLevel } from '../../../packages/content/src/study-level';
+import { isVocabularyStudyLevel, vocabularyStudyLevel } from '../../../packages/content/src/study-level';
 import type { StudyQuiz, StudyResult, WeeklyStat } from './api';
 import type { Word } from './data';
 
@@ -34,9 +34,9 @@ export function shuffle<T>(items: T[]): T[] {
 }
 
 export function selectNewWords(progress: LocalProgress, level: number, count: number): Word[] {
-  const b2c1 = isB2C1StudyLevel(level);
-  return localWords.filter(word => !progress[word.id] && (!b2c1 || isB2C1StudyLevel(word.level)))
-    .sort((a, b) => Math.abs(a.level - level) - Math.abs(b.level - level) || a.level - b.level)
+  const preferredLevel = vocabularyStudyLevel(level);
+  return localWords.filter(word => !progress[word.id] && isVocabularyStudyLevel(word.level))
+    .sort((a, b) => Math.abs(a.level - preferredLevel) - Math.abs(b.level - preferredLevel) || a.level - b.level)
     .slice(0, count);
 }
 

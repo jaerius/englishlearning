@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { isB2C1StudyLevel } from '@lingo-loop/content/dist/index.js';
+import { isVocabularyStudyLevel, vocabularyStudyLevel } from '@lingo-loop/content/dist/index.js';
 import { randomUUID } from 'node:crypto';
 import { StoreService } from '../common/store.service.js';
 import { kstDate } from '../common/date.js';
@@ -11,15 +11,15 @@ import { CreateStudySessionDto, SubmitAnswerDto } from './study.dto.js';
 type Quiz = { wordId:string; type:'A'|'B'|'C'; prompt:string; translation:string; options:string[]; answer:string; stage:number };
 @Injectable() export class StudyService {
  constructor(private readonly store:StoreService){}
- async create(input:CreateStudySessionDto){ return this.store.update(db=>{ const today=kstDate(), level=db.settings.userLevel||1; let selected:UserWord[]=[]; let newWords:Word[]=[];
+ async create(input:CreateStudySessionDto){ return this.store.update(db=>{ const today=kstDate(); let selected:UserWord[]=[]; let newWords:Word[]=[];
    if(input.wordIds?.length){selected=db.userWords.filter(item=>input.wordIds!.includes(item.wordId)).slice(0,db.settings.reviewCap);}
    else { selected=db.userWords.filter(item=>isReviewDue(item,today)).sort((a,b)=>a.nextReviewAt.localeCompare(b.nextReviewAt)).slice(0,db.settings.reviewCap); }
    if (input.kind === 'daily') {
      const progressByWord = new Map(db.userWords.map(item => [item.wordId, item]));
-     const b2c1 = isB2C1StudyLevel(level);
+     const level = vocabularyStudyLevel(db.settings.userLevel);
      newWords = db.words.filter(word => word.hasExample && (progressByWord.get(word.id)?.status ?? 'new') === 'new' &&
-       (b2c1 ? isB2C1StudyLevel(word.level) : word.level >= level))
-       .sort((a, b) => Math.abs(a.level - level) - Math.abs(b.level - level))
+       isVocabularyStudyLevel(word.level))
+       .sort((a, b) => Math.abs(a.level - level) - Math.abs(b.level - level) || a.level - b.level)
        .slice(0, db.settings.dailyNewCount);
      for (const word of newWords) {
        let progress = progressByWord.get(word.id);
