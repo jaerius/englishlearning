@@ -3,6 +3,7 @@ import { isB2C1StudyLevel } from '@lingo-loop/content/dist/index.js';
 import { randomUUID } from 'node:crypto';
 import { StoreService } from '../common/store.service.js';
 import { kstDate } from '../common/date.js';
+import { isReviewDue } from '../common/study-progress.js';
 import type { Database, UserWord, Word } from '../common/models.js';
 import { calcNext } from '../review/srs.js';
 import { CreateStudySessionDto, SubmitAnswerDto } from './study.dto.js';
@@ -11,18 +12,21 @@ type Quiz = { wordId:string; type:'A'|'B'|'C'; prompt:string; translation:string
 @Injectable() export class StudyService {
  constructor(private readonly store:StoreService){}
  async create(input:CreateStudySessionDto){ return this.store.update(db=>{ const today=kstDate(), level=db.settings.userLevel||1; let selected:UserWord[]=[]; let newWords:Word[]=[];
-   if(input.wordIds?.length){selected=db.userWords.filter(item=>input.wordIds!.includes(item.wordId));}
-   else { selected=db.userWords.filter(item=>item.nextReviewAt<=today).sort((a,b)=>a.nextReviewAt.localeCompare(b.nextReviewAt)).slice(0,db.settings.reviewCap); }
+   if(input.wordIds?.length){selected=db.userWords.filter(item=>input.wordIds!.includes(item.wordId)).slice(0,db.settings.reviewCap);}
+   else { selected=db.userWords.filter(item=>isReviewDue(item,today)).sort((a,b)=>a.nextReviewAt.localeCompare(b.nextReviewAt)).slice(0,db.settings.reviewCap); }
    if (input.kind === 'daily') {
-     const known = new Set(db.userWords.map(item => item.wordId));
+     const progressByWord = new Map(db.userWords.map(item => [item.wordId, item]));
      const b2c1 = isB2C1StudyLevel(level);
-     newWords = db.words.filter(word => word.hasExample && !known.has(word.id) &&
+     newWords = db.words.filter(word => word.hasExample && (progressByWord.get(word.id)?.status ?? 'new') === 'new' &&
        (b2c1 ? isB2C1StudyLevel(word.level) : word.level >= level))
        .sort((a, b) => Math.abs(a.level - level) - Math.abs(b.level - level))
        .slice(0, db.settings.dailyNewCount);
      for (const word of newWords) {
-       const progress: UserWord = { id: randomUUID(), wordId: word.id, stage: 0, nextReviewAt: today, correctCount: 0, wrongCount: 0, status: 'new', flaggedUnknown: false, spokenCount: 0, lastSpokenAt: null, lastStudiedAt: null };
-       db.userWords.push(progress);
+       let progress = progressByWord.get(word.id);
+       if (!progress) {
+         progress = { id: randomUUID(), wordId: word.id, stage: 0, nextReviewAt: today, correctCount: 0, wrongCount: 0, status: 'new', flaggedUnknown: false, spokenCount: 0, lastSpokenAt: null, lastStudiedAt: null };
+         db.userWords.push(progress);
+       }
        selected.unshift(progress);
      }
    }

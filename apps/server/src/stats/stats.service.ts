@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { StoreService } from '../common/store.service.js';
 import { kstDate } from '../common/date.js';
 import { monthlyCost } from '../common/cost.js';
+import { isReviewDue } from '../common/study-progress.js';
 import type { SpeakingData } from '../speaking/speaking.models.js';
 
 function daysBefore(date: string, count: number): string {
@@ -41,7 +42,7 @@ export class StatsService {
       today: {
         studiedCount: today?.studiedCount ?? 0,
         goal: db.settings.dailyNewCount,
-        dueCount: db.userWords.filter(item => item.nextReviewAt <= todayDate).length,
+        dueCount: db.userWords.filter(item => isReviewDue(item, todayDate)).length,
         wrongCount: db.userWords.filter(item => item.wrongCount > 0 && item.stage < 4).length,
         aiTurns: today?.aiTurns ?? 0,
       },

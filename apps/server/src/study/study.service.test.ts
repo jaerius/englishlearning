@@ -4,6 +4,7 @@ import type { Database } from '../common/models.js';
 import { emptyDatabase } from '../common/seed.js';
 import type { StoreService } from '../common/store.service.js';
 import { StudyService } from './study.service.js';
+import { StatsService } from '../stats/stats.service.js';
 
 function fixture(): { db: Database; service: StudyService } {
   const db = emptyDatabase();
@@ -42,6 +43,28 @@ test('daily study uses the B2–C1 range and retains previously learned reviews'
   const session = await service.create({ kind: 'daily' });
   assert.deepEqual(session.newWords.map(word => word.level), [5, 4]);
   assert.ok(session.quizQueue.some(quiz => quiz.wordId === 'l1-arrive'));
+  for (const word of session.newWords) {
+    await service.answer({ sessionId: session.sessionId, wordId: word.id, quizType: 'A', isCorrect: true, hintUsed: false });
+  }
   const next = await service.create({ kind: 'daily' });
   assert.equal(next.newWords.length, 0);
+});
+
+test('an oversized abandoned session does not turn unattempted words into reviews', async () => {
+  const { db, service } = fixture();
+  const store = { snapshot: () => structuredClone(db) } as StoreService;
+  db.settings.userLevel = 5;
+  const unattempted = db.words.filter(word => word.hasExample && word.level >= 4);
+  assert.ok(unattempted.length > 1000);
+  db.userWords.push(...unattempted.map(word => ({
+    ...db.userWords[0], id: word.id, wordId: word.id, stage: 0, status: 'new' as const,
+  })));
+  assert.equal(new StatsService(store).summary().today.dueCount, 1);
+  const session = await service.create({ kind: 'daily' });
+  assert.equal(session.newWords.length, 10);
+  assert.ok(session.newWords.every(word => word.level === 5));
+  assert.equal(session.quizQueue.length, 11);
+  assert.equal(db.userWords.length, unattempted.length + 1);
+  const review = await service.create({ kind: 'review' });
+  assert.deepEqual(review.quizQueue.map(quiz => quiz.wordId), ['l1-arrive']);
 });

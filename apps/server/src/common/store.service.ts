@@ -3,7 +3,7 @@ import { mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import type { Database } from './models.js';
-import { emptyDatabase, seededWords } from './seed.js';
+import { emptyDatabase, restoreSettings, seededWords } from './seed.js';
 
 @Injectable()
 export class StoreService implements OnModuleInit {
@@ -24,6 +24,7 @@ export class StoreService implements OnModuleInit {
       }
       this.data = parsed;
       this.data.words = seededWords();
+      this.data.settings = restoreSettings(parsed.settings);
     } else {
       this.persist(this.data);
     }

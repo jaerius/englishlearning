@@ -100,7 +100,7 @@ export const useApp = create<State>()(persist((set, get) => ({
       .sort((a, b) => progress[a.id].nextReviewAt.localeCompare(progress[b.id].nextReviewAt))
       .slice(0, state.settings.reviewCap);
     const selected = wordIds?.length
-      ? localWords.filter(word => wordIds.includes(word.id) && progress[word.id])
+      ? localWords.filter(word => wordIds.includes(word.id) && progress[word.id]).slice(0, state.settings.reviewCap)
       : due;
     const newWords = kind === 'daily' && !wordIds?.length
       ? selectNewWords(progress, state.settings.level, state.settings.dailyNew)
@@ -185,7 +185,12 @@ export const useApp = create<State>()(persist((set, get) => ({
     quizQueue: [], newWords: [], lastResult: null, pendingAnswers: [], localProgress: {}, localDaily: {}, localSession: null }),
 }), { name: 'lingo-loop-v5', merge: (persisted, current) => {
   const saved = persisted && typeof persisted === 'object' ? persisted as Partial<State> : {};
-  return { ...current, ...saved, settings: normalizeSettings(saved.settings) };
+  const merged = { ...current, ...saved, settings: normalizeSettings(saved.settings) };
+  // A valid daily session has at most 20 new words and 50 review words.
+  if (merged.quizQueue.length > 70) {
+    return { ...merged, sessionId: null, quizQueue: [], newWords: [], localSession: null };
+  }
+  return merged;
 }, partialize: state => ({ settings: state.settings, pendingAnswers: state.pendingAnswers,
   sessionId: state.sessionId, quizQueue: state.quizQueue, newWords: state.newWords,
   localProgress: state.localProgress, localDaily: state.localDaily, localSession: state.localSession,
